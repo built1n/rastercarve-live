@@ -54,13 +54,13 @@
 
         <div>
           <label for="dimension">Dimension to specify:</label>
-          <input type="radio" name="dimension" value="width"> Width (X)<br>
+          <input type="radio" name="dimension" value="width" required checked> Width (X)<br>
           <input type="radio" name="dimension" value="height"> Height (Y)
         </div>
 
         <div>
           <label for="size">Width/height (inches):</label>
-          <input type="number" name="size" value="10" step=".1" max="100" pattern="\d+.\d+">
+          <input type="number" name="size" value="4" step=".1" max="100" pattern="\d+.\d+">
         </div>
 
         <h3>Machine options</h3>
@@ -93,7 +93,7 @@
 
         <div>
           <label for="depth">Maximum engraving depth (inches):</label>
-          <input type="number" name="depth" value=".08" step=".001" max="100" pattern="\d+.\d+">
+          <input type="number" name="depth" value=".090" step=".001" max="100" pattern="\d+.\d+">
         </div>
 
         <div>
@@ -108,7 +108,7 @@
 
         <div>
           <label for="resolution">Linear resolution (smaller is better but slower):</label>
-          <input type="number" name="resolution" value=".01" step=".001" min=".001" max="1" pattern="\d+.\d+">%
+          <input type="number" name="resolution" value=".05" step=".001" min=".001" max="1" pattern="\d+.\d+">%
         </div>
 
         <div>
