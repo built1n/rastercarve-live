@@ -10,110 +10,192 @@ const uniqueFilename = require('unique-filename');
 const bodyParser = require('body-parser');
 const compress = require('compression');
 const crypto = require('crypto');
+const {check, validationResult} = require('express-validator');
 
 const app = express();
 const page = fs.readFileSync('index.html');
 
-app.use(fileUpload());
+app.use(fileUpload({ limits: { fileSize: 50 * 1024 * 1024 } }));
 app.use(morgan('combined'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(compress());
 
 const port = 8080;
 
-const OUTDIR="/app/output";
+const OUTDIR="/app/output/"; // keep trailing slash
 
-function hash_file(path) {
+// try not to take forever
+const limits = {
+    max_size: 1000,
+    min_toolangle: 5,
+    min_depth: .01,
+    min_res: .0001
+};
+
+const checks = [
+    check('dimension').isIn(['width', 'height']),
+    check('size').isFloat({gt: 0, max: limits.max_size}),
+    check('feed').isFloat({gt: 0}),
+    check('rapid').isFloat({gt: 0}),
+    check('safez').isFloat({gt: 0}),
+    check('endz').isFloat({gt: 0}),
+    check('toolangle').isFloat({gt: limits.min_toolangle, lt: 180}),
+    check('depth').isFloat({gt: limits.min_depth}),
+    check('lineangle').isFloat({min: 0, lt: 90}),
+    check('stepover').isFloat({min: 100}),
+    check('resolution').isFloat({min: limits.min_res})
+];
+
+// returns hash object
+function hashfile(path) {
   return new Promise((resolve, reject) => {
-    const hash = crypto.createHash('sha256');
-    const stream = fs.createReadStream(path);
-    stream.on('error', err => reject(err));
-    stream.on('data', chunk => hash.update(chunk));
-    stream.on('end', () => resolve(hash));
+      const sha256 = crypto.createHash('sha256');
+      const stream = fs.createReadStream(path);
+      stream.on('error', err => reject(err));
+      stream.on('data', chunk => sha256.update(chunk));
+      stream.on('end', () => resolve(sha256));
   });
 }
 
-function send500(res) { res.status(500); res.send('internal server error'); }
+function hashstring(str) {
+    const sha256 = crypto.createHash('sha256');
+    sha256.update(str);
+    return sha256.digest('hex');
+}
+
+// hex hash of json body
+function hashbody(body) {
+    return hashstring(JSON.stringify(body));
+}
+
+// generate a hash string to uniquely identify a request (an image and
+// associated parameters)
+function hashall(imagefile, body) {
+    hashfile(imagefile)
+}
+
+function send500(res) { res.status(500).send('internal server error'); }
+
+function buildcmd(body, image) {
+    var cmd = 'rastercarve -q ';
+    if(body.dimension == 'width')
+        cmd += '--width ';
+    else
+        cmd += '--height ';
+    cmd += body.size;
+    cmd += ' ' + image;
+    cmd += ' -f ' + body.feed;
+    cmd += ' --rapid ' + body.rapid;
+    cmd += ' -z ' + body.safez;
+    cmd += ' --end-z ' + body.endz;
+    cmd += ' -d ' + body.depth;
+    cmd += ' -t ' + body.toolangle;
+    cmd += ' -a ' + body.lineangle;
+    cmd += ' -s ' + body.stepover;
+    cmd += ' -r ' + body.resolution;
+
+    return cmd;
+}
 
 function gcode(req, res) {
+    const errors = validationResult(req);
+    if(!errors.isEmpty())
+        return res.status(422).json(errors.array());
+
+    console.log(req.body);
+
     try {
+        if(!req.files || !req.files.image)
+            res.status(400).send('no image');
+
+        // first check cache (key uniquely identifies output g-code)
         var file = req.files.image;
+        var outname = OUTDIR + hashstring(file.md5 + hashbody(req.body)) + '.nc';
+
+        if(fs.existsSync(outname))
+        {
+            console.log("Cache hit!");
+            return res.download(outname); // hit!
+        }
+
         var tmpname = uniqueFilename(os.tmpdir());
         file.mv(tmpname);
 
-        console.log("hashing");
-        hash_file(tmpname).then((hashobj) =>
-                                {
-                                    // hash the given parameters
-                                    console.log(req.body);
+        var cmd = buildcmd(req.body, tmpname) + ' > ' + outname;
 
-                                    var imghash = hashobj.digest('hex');
-                                    var outname = imghash + '.nc';
-
-                                    if(fs.existsSync(outname)) // cached
-                                    {
-                                        res.download(outname);
-                                        return;
-                                    }
-
-                                    var cmd = 'rastercarve --width 4 -q ' + tmpname + ' > ' + outname;
-                                    console
-                                    exec(cmd, (err, stdout, stderr) =>
-                                         {
-                                             if(err)
-                                                 throw err;
-                                             res.download(outname);
-                                         });
-                                },
-                             (err) => { send500(res); });
-
+        exec(cmd, (err, stdout, stderr) =>
+             {
+                 if(err)
+                     throw err;
+                 res.download(outname);
+             });
     } catch(err) {
-        send500(res);
+        //throw err;
+        res.status(500).send(err);
     }
 }
 
+function buildpreviewcmd(body, image, ncout, svgout) {
+    return buildcmd(body, image, ncout) + ' | tee ' + ncout + ' | rastercarve-preview > ' + svgout;
+}
+
+function buildpreviewcmd_cache(body, ncname, outname) {
+    return 'rastercarve-preview < ' + ncname + ' > ' + outname;
+}
+
 function preview(req, res) {
+    const errors = validationResult(req);
+    if(!errors.isEmpty())
+        return res.status(422).json(errors.array());
+
+    console.log(req.body);
+
     try {
+        if(!req.files || !req.files.image)
+            res.status(400).send('no image');
+
+        // first check cache (key uniquely identifies output g-code)
         var file = req.files.image;
-        var tmpname = uniqueFilename(os.tmpdir());
-        file.mv(tmpname);
+        var basename = OUTDIR + hashstring(file.md5 + hashbody(req.body));
+        var outname = basename + '.svg';
 
-        hash_file(tmpname).then((imghash) =>
-                                {
-                                    var gcodename = imghash + '.nc';
+        if(fs.existsSync(outname))
+        {
+            console.log("Cache hit!");
+            return res.sendFile(outname); // hit!
+        }
 
-                                    var outname = uniqueFilename(OUTDIR) + '.svg';
+        // see if g-code already exists
+        var ncname = basename + '.nc';
 
-                                    var cmd = 'rastercarve --width 4 -q ' + tmpname + ' | tee ' + gcodename + ' | rastercarve-preview > ' + outname;
-                                    console.time('generation');
-                                    exec(cmd, (err, stdout, stderr) =>
-                                         {
-                                             console.timeEnd('generation');
-                                             if(err)
-                                                 throw err;
-                                             fs.readFile(outname, (err, data) => {
-                                                 if(err)
-                                                 {
-                                                     res.status(500);
-                                                     res.send("Internal server error");
-                                                     return;
-                                                 }
-                                                 res.header("Content-type", "image/svg+xml");
-                                                 res.send(data);
-                                             });
-                                         });
-                                },
-                                (err) => { send500(res); });
+        var cmd;
+        if(fs.existsSync(ncname))
+        {
+            cmd = buildpreviewcmd_cached(req.body, ncname, outname);
+        }
+        else
+        {
+            var tmpname = uniqueFilename(os.tmpdir());
+            file.mv(tmpname);
+
+            cmd = buildpreviewcmd(req.body, tmpname, ncname, outname);
+        }
+
+        exec(cmd, (err, stdout, stderr) =>
+             {
+                 if(err) throw err;
+                 res.sendFile(outname);
+             });
     } catch(err) {
-        res.status(500);
-        res.send("Bad input");
+        res.status(500).header('Content-Type', 'text/plain').send(err);
+        //throw err;
     }
 }
 
 app.get('/', (req, res) => { res.header("Content-type", "text/html");  res.send(page) });
 
-app.post('/gcode', gcode)
-app.post('/preview', preview);
+app.post('/gcode', checks, gcode)
+app.post('/preview', checks, preview);
 
 var httpServer = http.createServer(app);
 httpServer.listen(port);
