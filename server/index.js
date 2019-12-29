@@ -135,12 +135,18 @@ function gcode(req, res) {
     }
 }
 
-function buildpreviewcmd(body, image, ncout, svgout) {
-    return buildcmd(body, image, ncout) + ' | tee ' + ncout + ' | rastercarve-preview > ' + svgout;
+function buildpreviewcmd(body) {
+    var cmd = 'rastercarve-preview ' + body.toolangle;
+    console.log(cmd);
+    return cmd;
 }
 
-function buildpreviewcmd_cache(body, ncname, outname) {
-    return 'rastercarve-preview < ' + ncname + ' > ' + outname;
+function buildpreviewcmd_fullpipe(body, image, ncout, svgout) {
+    return buildcmd(body, image, ncout) + ' | tee ' + ncout + ' | ' + buildpreviewcmd(body) + ' > ' + svgout;
+}
+
+function buildpreviewcmd_cached(body, ncname, outname) {
+    return buildpreviewcmd(body) + ' < ' + ncname + ' > ' + outname;
 }
 
 function preview(req, res) {
@@ -178,7 +184,8 @@ function preview(req, res) {
             var tmpname = uniqueFilename(os.tmpdir());
             file.mv(tmpname);
 
-            cmd = buildpreviewcmd(req.body, tmpname, ncname, outname);
+            cmd = buildpreviewcmd_fullpipe(req.body, tmpname, ncname, outname);
+            console.log(cmd);
         }
 
         exec(cmd, (err, stdout, stderr) =>
