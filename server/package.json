@@ -1,0 +1,38 @@
+{
+    "name": "rastercarve-web",
+    "version": "1.0.0",
+    "description": "Web interface to rastercarve",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/built1n/rastercarve-web.git"
+    },
+    "keywords": [
+        "cnc"
+    ],
+    "author": "Franklin Wei",
+    "license": "GPLv2+",
+    "bugs": {
+        "url": "https://github.com/built1n/rastercarve-web/issues"
+    },
+    "homepage": "https://github.com/built1n/rastercarve-web#readme",
+    "dependencies": {
+        "body-parser": "^1.19.0",
+        "busboy": "^0.3.1",
+        "child_process": "^1.0.2",
+        "compression": "^1.7.4",
+        "express": "^4.17.1",
+        "express-fileupload": "^1.1.5",
+        "formidable": "^1.2.1",
+        "fs": "0.0.1-security",
+        "http": "0.0.0",
+        "morgan": "^1.9.1",
+        "os": "^0.1.1",
+        "tmp": "^0.1.0",
+        "unique-filename": "^1.1.1"
+    }
+}

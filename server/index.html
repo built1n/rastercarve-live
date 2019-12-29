@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>RasterCarve</title>
+    <style>
+      body {
+          font-family: "Sans-serif";
+      }
+
+      #container {
+          margin-right: auto; /* 1 */
+          margin-left:  auto; /* 1 */
+
+          max-width: 960px; /* 2 */
+
+          padding-right: 10px; /* 3 */
+          padding-left:  10px; /* 3 */
+      }
+
+      footer {
+          position: fixed;
+          left: 0;
+          bottom: 0;
+          text-align: center;
+          font-size: 8pt;
+          width: 100%;
+      }
+      label {
+          display: block;
+          font: 1rem 'Fira Sans', sans-serif;
+      }
+
+      input,
+      label {
+          margin: .4rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <h1>RasterCarve</h1>
+
+      <p>
+      </p>
+
+      <form method="POST" action="/preview" enctype="multipart/form-data">
+        <div>
+          <label for="image">Image:</label>
+          <input id="image" type="file" name="image" required />
+        </div>
+
+        <div>
+          <label for="dimension">Dimension to specify:</label>
+          <input type="radio" name="dimension" value="width" required> Width (X)<br>
+          <input type="radio" name="dimension" value="height"> Height (Y)
+        </div>
+
+        <div>
+          <label for="size">Width/height (inches):</label>
+          <input type="number" name="size" value="10" step=".1" max="100" pattern="\d+.\d+">
+        </div>
+
+        <h3>Machine options</h3>
+        <div>
+          <label for="feed">Feed rate (inches/min):</label>
+          <input type="number" name="feed" value="100" step=".1" max="1000" pattern="\d+.\d+">
+        </div>
+
+        <div>
+          <label for="rapid">Plunge rate (inches/min):</label>
+          <input type="number" name="rapid" value="100" step=".1" max="1000" pattern="\d+.\d+">
+        </div>
+
+        <div>
+          <label for="safez">Safe Z height (inches):</label>
+          <input type="number" name="safez" value=".1" step=".01" max="100" pattern="\d+.\d+">
+        </div>
+
+        <div>
+          <label for="endz">Final Z height (inches):</label>
+          <input type="number" name="endz" value=".1" step=".01" max="100" pattern="\d+.\d+">
+        </div>
+
+        <div>
+          <label for="toolangle">Tool included angle (degrees):</label>
+          <input type="number" name="toolangle" value="30" step=".01" max="90" pattern="\d+.\d+">
+        </div>
+
+        <h3>Engraving options</h3>
+
+        <div>
+          <label for="depth">Maximum engraving depth (inches):</label>
+          <input type="number" name="depth" value=".08" step=".001" max="100" pattern="\d+.\d+">
+        </div>
+
+        <div>
+          <label for="lineangle">Line angle (degrees above horizontal):</label>
+          <input type="number" name="lineangle" value="22.5" step=".1" max="90" pattern="\d+.\d+">
+        </div>
+
+        <div>
+          <label for="stepover">Stepover/line spacing:</label>
+          <input type="number" name="stepover" value="120" step=".1" max="500" pattern="\d+.\d+">%
+        </div>
+
+        <div>
+          <label for="resolution">Linear resolution (smaller is better but slower):</label>
+          <input type="number" name="resolution" value=".01" step=".001" min=".001" max="1" pattern="\d+.\d+">%
+        </div>
+
+        <div>
+          <input type="submit" value="Preview">
+          <input type="submit" value="G-code" formaction="/gcode">
+        </div>
+      </form>
+    </div>
+     <footer>
+       Copyright &copy; 2019 <a href="mailto:me@fwei.tk">Franklin Wei</a>.
+     </footer>
+  </body>
+</html>
