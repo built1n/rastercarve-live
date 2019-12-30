@@ -13,8 +13,10 @@ const crypto = require('crypto');
 const {check, validationResult} = require('express-validator');
 
 const app = express();
-const page = fs.readFileSync('index.html');
 
+const page = fs.readFileSync('public/index.html');
+
+app.use(express.static('public'));
 app.use(fileUpload({ limits: { fileSize: 50 * 1024 * 1024 } }));
 app.use(morgan('combined'));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -36,7 +38,7 @@ const checks = [
     check('dimension').isIn(['width', 'height']),
     check('size').isFloat({gt: 0, max: limits.max_size}),
     check('feed').isFloat({gt: 0}),
-    check('rapid').isFloat({gt: 0}),
+    check('plunge').isFloat({gt: 0}),
     check('safez').isFloat({gt: 0}),
     check('endz').isFloat({gt: 0}),
     check('toolangle').isFloat({gt: limits.min_toolangle, lt: 180}),
@@ -85,7 +87,7 @@ function buildcmd(body, image) {
     cmd += body.size;
     cmd += ' ' + image;
     cmd += ' -f ' + body.feed;
-    cmd += ' --rapid ' + body.rapid;
+    cmd += ' -p ' + body.plunge;
     cmd += ' -z ' + body.safez;
     cmd += ' --end-z ' + body.endz;
     cmd += ' -d ' + body.depth;
@@ -198,8 +200,6 @@ function preview(req, res) {
         //throw err;
     }
 }
-
-app.get('/', (req, res) => { res.header("Content-type", "text/html");  res.send(page) });
 
 app.post('/gcode', checks, gcode)
 app.post('/preview', checks, preview);

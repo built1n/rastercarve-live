@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html style="height:100%">
+  <head>
+    <title>RasterCarve</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body style="height:100%">
+    <div style="height:100%">
+      <div class="split" id="one" style="position:fixed;">
+        <div class="container" style="overflow:auto;">
+          <h1>RasterCarve</h1>
+
+          <p>
+            This is an experimental web interface to <a href="https://github.com/built1n/rastercarve">RasterCarve</a>, a CNC engraving toolpath generator. To begin, upload an image below. The defaults can be safely kept as they are.
+          </p>
+
+          <form method="POST" action="/preview" enctype="multipart/form-data">
+
+            <fieldset>
+              <legend>Input & Scaling</legend>
+              <div class="form-group">
+                <label for="image">
+                  Image to engrave:
+                </label>
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" name="image" aria-describedby="fileInput">
+                  <label class="custom-file-label" for="image">Choose an image...</label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="size">Desired dimension:</label>
+                <div class="input-group mb-4">
+                  <input type="text" class="form-control" placeholder="Enter value..." aria-label="Recipient's username" aria-describedby="basic-addon2" name="size">
+                  <div class="input-group-append">
+                    <span class="input-group-text nopad" id="basic-addon2">
+                      <select class="btn btn-mini" name="dimension">
+                        <option value="width" selected>Desired width (inches)</option>
+                        <option value="height">Desired height (inches)</option>
+                    </select></span>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Machine & Tool</legend>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="feed">Feed rate:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value="100" aria-label="Feed rate" aria-describedby="basic-addon2" name="feed">
+                    <div class="input-group-append">
+                      <span class="input-group-text">inches/min</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group col-md-6">
+                  <label for="plunge">Plunge rate:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value="30" aria-label="Plunge rate" aria-describedby="basic-addon2" name="plunge">
+                    <div class="input-group-append">
+                      <span class="input-group-text">inches/min</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="safez">Safe Z height (for retraction between grooves):</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" step=".01" value=".1" aria-label="Safe Z height" aria-describedby="basic-addon2" name="safez">
+                    <div class="input-group-append">
+                      <span class="input-group-text">inches</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="endz">Ending Z height (for final traverse):</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value="2" step=".1" aria-label="Feed rate" aria-describedby="basic-addon2" name="endz">
+                    <div class="input-group-append">
+                      <span class="input-group-text">inches</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="toolangle">Tool included angle (degrees):</label>
+
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value="30" min="0" max="179" aria-label="Tool angle" aria-describedby="basic-addon2" name="toolangle">
+                    <div class="input-group-append">
+                      <span class="input-group-text">degrees</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Engraving options</legend>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="depth">Maximum engraving depth (inches):</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value=".080" step=".001" aria-label="Engraving depth" aria-describedby="basic-addon2" name="depth">
+                    <div class="input-group-append">
+                      <span class="input-group-text">inches</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group col-md-6">
+                  <label for="lineangle">Line angle:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value="22.5" max="90" step=".1" aria-label="Line angle" aria-describedby="basic-addon2" name="lineangle">
+                    <div class="input-group-append">
+                      <span class="input-group-text">degrees above horizontal</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="stepover">Stepover/line spacing:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value="120" step="1" aria-label="Stepover" aria-describedby="basic-addon2" name="stepover">
+                    <div class="input-group-append">
+                      <span class="input-group-text">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group col-md-6">
+                  <label for="resolution">Linear resolution (smaller is better but slower):</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value=".05" min="0" step=".001" aria-label="Resolution" aria-describedby="basic-addon2" name="resolution">
+                    <div class="input-group-append">
+                      <span class="input-group-text">inches</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <input type="submit" value="Preview" class="btn btn-lg btn-secondary">
+                <input type="submit" value="G-code" class="btn btn-lg btn-primary" formaction="/gcode">
+              </div>
+            </fieldset>
+          </form>
+          <footer class="text-center">
+            Copyright &copy; 2019 <a href="mailto:me@fwei.tk">Franklin Wei</a>.
+          </footer>
+        </div>
+      </div>
+      <div class="split" id="two">
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
+    <script src="/js/rastercarve-web.js"></script>
+  </body>
+</html>
