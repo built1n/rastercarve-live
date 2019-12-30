@@ -110,6 +110,8 @@ function preview() {
             success: (data, status, xhr) => {
                 showPreview(xhr);
                 console.log("Precache hit!");
+                $(this).prop("disabled", false);
+                $(this).html(oldHtml);
             },
             error: () => {
                 // not cached
@@ -121,6 +123,8 @@ function preview() {
                     success: (data, status, xhr) => {
                         showPreview(xhr);
                         console.log("Precache miss :(");
+                        $(this).prop("disabled", false);
+                        $(this).html(oldHtml);
                     },
                     error: (err) => alert(err)
                 });
@@ -128,11 +132,7 @@ function preview() {
         });
     }).catch((err) => {
         console.log(err);
-    }).finally(() => {
-        $(this).prop("disabled", false);
-        $(this).html(oldHtml);
     });
-
     return false;
 }
 
@@ -160,38 +160,37 @@ function gcode() {
         `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`
     );
 
-    hashImage().then((res) =>
-                     {
-                         var hash = res.hashResult;
+    hashImage().then((res) => {
+        var hash = res.hashResult;
 
-                         var formData = precacheData(hash);
+        var formData = precacheData(hash);
 
-                         $.post({
-                             url: '/api/gcode/precache',
-                             data: formData,
-                             success: (data, status, xhr) => {
-                                 downloadFile(data);
-                                 console.log("Precache hit!");
-                             },
-                             error: () => {
-                                 $.post({
-                                     url: '/api/gcode',
-                                     data: getData(),
-                                     processData: false,
-                                     contentType: false,
-                                     success: (data, status, xhr) => {
-                                         downloadFile(data);
-                                         console.log("Precache miss :(");
-                                     },
-                                     error: (err) => alert(err)
-                                 });
-                             }
-                         });
-                     }).finally(() =>
-                                {
-                                    $(this).prop("disabled", false);
-                                    $(this).html(oldHtml);
-                                });
+        $.post({
+            url: '/api/gcode/precache',
+            data: formData,
+            success: (data, status, xhr) => {
+                downloadFile(data);
+                console.log("Precache hit!");
+                $(this).prop("disabled", false);
+                $(this).html(oldHtml);
+            },
+            error: () => {
+                $.post({
+                    url: '/api/gcode',
+                    data: getData(),
+                    processData: false,
+                    contentType: false,
+                    success: (data, status, xhr) => {
+                        downloadFile(data);
+                        console.log("Precache miss :(");
+                        $(this).prop("disabled", false);
+                        $(this).html(oldHtml);
+                    },
+                    error: (err) => alert(err)
+                });
+            }
+        });
+    });
 
     return false;
 }
