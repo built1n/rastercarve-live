@@ -160,7 +160,7 @@ function preview(req, res) {
 
     try {
         if(!req.files || !req.files.image)
-            res.status(400).send('no image');
+            return res.status(400).send('no image');
 
         // first check cache (key uniquely identifies output g-code)
         var file = req.files.image;
@@ -201,8 +201,8 @@ function preview(req, res) {
     }
 }
 
-app.post('/gcode', checks, gcode)
-app.post('/preview', checks, preview);
+app.post('/api/gcode', checks, gcode)
+app.post('/api/preview', checks, preview);
 
 var httpServer = http.createServer(app);
 httpServer.listen(port);

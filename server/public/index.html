@@ -15,8 +15,7 @@
             This is an experimental web interface to <a href="https://github.com/built1n/rastercarve">RasterCarve</a>, a CNC engraving toolpath generator. To begin, upload an image below. The defaults can be safely kept as they are.
           </p>
 
-          <form method="POST" action="/preview" enctype="multipart/form-data">
-
+          <form method="POST" id="main" action="javascript:void(0);" enctype="multipart/form-data">
             <fieldset>
               <legend>Input & Scaling</legend>
               <div class="form-group">
@@ -36,8 +35,8 @@
                   <div class="input-group-append">
                     <span class="input-group-text nopad" id="basic-addon2">
                       <select class="btn btn-mini" name="dimension">
-                        <option value="width" selected>Desired width (inches)</option>
-                        <option value="height">Desired height (inches)</option>
+                        <option value="width" selected>Desired width (in)</option>
+                        <option value="height">Desired height (in)</option>
                     </select></span>
                   </div>
                 </div>
@@ -53,7 +52,7 @@
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" value="100" aria-label="Feed rate" aria-describedby="basic-addon2" name="feed">
                     <div class="input-group-append">
-                      <span class="input-group-text">inches/min</span>
+                      <span class="input-group-text">in/min</span>
                     </div>
                   </div>
                 </div>
@@ -63,7 +62,7 @@
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" value="30" aria-label="Plunge rate" aria-describedby="basic-addon2" name="plunge">
                     <div class="input-group-append">
-                      <span class="input-group-text">inches/min</span>
+                      <span class="input-group-text">in/min</span>
                     </div>
                   </div>
                 </div>
@@ -75,7 +74,7 @@
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" step=".01" value=".1" aria-label="Safe Z height" aria-describedby="basic-addon2" name="safez">
                     <div class="input-group-append">
-                      <span class="input-group-text">inches</span>
+                      <span class="input-group-text">in</span>
                     </div>
                   </div>
                 </div>
@@ -84,7 +83,7 @@
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" value="2" step=".1" aria-label="Feed rate" aria-describedby="basic-addon2" name="endz">
                     <div class="input-group-append">
-                      <span class="input-group-text">inches</span>
+                      <span class="input-group-text">in</span>
                     </div>
                   </div>
                 </div>
@@ -97,7 +96,7 @@
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" value="30" min="0" max="179" aria-label="Tool angle" aria-describedby="basic-addon2" name="toolangle">
                     <div class="input-group-append">
-                      <span class="input-group-text">degrees</span>
+                      <span class="input-group-text">deg</span>
                     </div>
                   </div>
                 </div>
@@ -109,11 +108,11 @@
 
               <div class="form-row">
                 <div class="form-group col-md-6">
-                  <label for="depth">Maximum engraving depth (inches):</label>
+                  <label for="depth">Maximum engraving depth (in):</label>
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" value=".080" step=".001" aria-label="Engraving depth" aria-describedby="basic-addon2" name="depth">
                     <div class="input-group-append">
-                      <span class="input-group-text">inches</span>
+                      <span class="input-group-text">in</span>
                     </div>
                   </div>
                 </div>
@@ -123,7 +122,7 @@
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" value="22.5" max="90" step=".1" aria-label="Line angle" aria-describedby="basic-addon2" name="lineangle">
                     <div class="input-group-append">
-                      <span class="input-group-text">degrees</span>
+                      <span class="input-group-text">deg</span>
                     </div>
                   </div>
                 </div>
@@ -145,7 +144,7 @@
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" value=".05" min="0" step=".001" aria-label="Resolution" aria-describedby="basic-addon2" name="resolution">
                     <div class="input-group-append">
-                      <span class="input-group-text">inches</span>
+                      <span class="input-group-text">in</span>
                     </div>
                   </div>
                 </div>
@@ -156,9 +155,9 @@
                   <input type="submit" value="Preview" class="btn btn-block btn-secondary">
                 </div>
                 <div class="col-lg-6">
-                  <input type="submit" value="G-code" class="btn btn-block btn-primary" formaction="/gcode">
+                  <input type="submit" value="G-code" class="btn btn-block btn-primary" onsubmit="gcode();">
                 </div>
-                </div>
+              </div>
             </fieldset>
           </form>
           <footer class="text-center">
@@ -167,9 +166,11 @@
         </div>
       </div>
       <div class="split" id="two">
+        <div id="preview"></div>
       </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="http://malsup.github.com/jquery.form.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/split.js/dist/split.min.js"></script>

@@ -6,15 +6,15 @@ RUN apt-get update && apt-get install -y \
     git \
     cmake
 
-RUN pip3 install rastercarve
-
 RUN git clone --recursive https://github.com/built1n/rastercarve-preview && \
     cd rastercarve-preview && \
     mkdir build && \
     cd build && \
     cmake .. && \
-    make && \
+    make -j10 && \
     make install
+
+RUN pip3 install rastercarve
 
 WORKDIR /app
 
