@@ -67,3 +67,22 @@ span {
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome, Opera and Firefox */
 }
+
+#preview {
+    display:table;
+    height:100%;
+    width:100%;
+}
+
+#pdiv {
+    height:100%;
+}
+
+.placeholder {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.box {
+    width: 100%; height:100%;
+}
