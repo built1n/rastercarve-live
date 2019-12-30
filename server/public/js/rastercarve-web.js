@@ -1,11 +1,26 @@
 function getData() {
+    var e = document.getElementById('main');
+    var formData = new FormData(e);
+    return formData;
 }
 
 function preview() {
     console.log('preview');
+    var formData = getData();
+    $.post({
+        url: '/api/preview',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: (data, status, xhr) => $('#preview').html(xhr.responseText),
+        error: () => alert("err")
+    });
+    return false;
 }
 
 function gcode() {
+    console.log('gcode');
+    var formData = getData();
 }
 
 function init() {
@@ -20,20 +35,7 @@ function init() {
         cursor: 'col-resize',
     });
 
-    $("form#main").submit(function(e) {
-        e.preventDefault();
-        var formData = new FormData(this);
-
-        $.post({
-            url: '/api/preview',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: (data, status, xhr) => $('#preview').html(xhr.responseText),
-            error: () => alert("err")
-        });
-
-    });
+    $("#pbutton").click(preview);
 }
 
 $(document).ready(init);
