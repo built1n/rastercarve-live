@@ -250,7 +250,7 @@ function init() {
     });
 
     // prefilled by browser?
-    if(hasFile)
+    if(hasFile())
         $('.custom-file-label').text(getFileName);
 
     Split(['#one', '#two'], {
