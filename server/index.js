@@ -196,7 +196,7 @@ function preview(req, res) {
                  res.sendFile(outname);
              });
     } catch(err) {
-        res.status(500).header('Content-Type', 'text/plain').send(err);
+        res.status(500).header('Content-type', 'text/plain').send(err);
         //throw err;
     }
 }
