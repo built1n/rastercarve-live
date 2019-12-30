@@ -3,14 +3,6 @@ select.btn-mini {
     line-height: 14px;
 }
 
-/* this is optional (see below) */
-select.btn {
-/*    -webkit-appearance: button;
-       -moz-appearance: button;
-            appearance: button;
-    padding-right: 16px; */
-}
-
 select.btn-mini + .caret {
     margin-left: -20px;
     margin-top: 9px;
@@ -22,6 +14,7 @@ select.btn-mini + .caret {
 .split, .gutter.gutter-horizontal {
     float: left;
 }
+
 body {height: 100%}
 
 .gutter.gutter-horizontal {

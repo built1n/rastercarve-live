@@ -7,8 +7,8 @@
   </head>
   <body style="height:100%">
     <div style="height:100%">
-      <div class="split" id="one" style="position:fixed;">
-        <div class="container" style="overflow:auto;">
+      <div class="split" id="one" style="display:flex; height:100%;flex-direction:column;overflow:hidden;">
+        <div class="container" style="overflow-y:auto;position:relative;">
           <h1>RasterCarve</h1>
 
           <p>
@@ -71,7 +71,7 @@
 
               <div class="form-row">
                 <div class="form-group col-md-6">
-                  <label for="safez">Safe Z height (for retraction between grooves):</label>
+                  <label for="safez">Safe Z height:</label>
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" step=".01" value=".1" aria-label="Safe Z height" aria-describedby="basic-addon2" name="safez">
                     <div class="input-group-append">
@@ -92,7 +92,7 @@
 
               <div class="form-row">
                 <div class="form-group col-md-6">
-                  <label for="toolangle">Tool included angle (degrees):</label>
+                  <label for="toolangle">Tool included angle:</label>
 
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" value="30" min="0" max="179" aria-label="Tool angle" aria-describedby="basic-addon2" name="toolangle">
@@ -119,11 +119,11 @@
                 </div>
 
                 <div class="form-group col-md-6">
-                  <label for="lineangle">Line angle:</label>
+                  <label for="lineangle">Line angle (above horizontal):</label>
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" value="22.5" max="90" step=".1" aria-label="Line angle" aria-describedby="basic-addon2" name="lineangle">
                     <div class="input-group-append">
-                      <span class="input-group-text">degrees above horizontal</span>
+                      <span class="input-group-text">degrees</span>
                     </div>
                   </div>
                 </div>
@@ -141,7 +141,7 @@
                 </div>
 
                 <div class="form-group col-md-6">
-                  <label for="resolution">Linear resolution (smaller is better but slower):</label>
+                  <label for="resolution">Linear resolution</label>
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" value=".05" min="0" step=".001" aria-label="Resolution" aria-describedby="basic-addon2" name="resolution">
                     <div class="input-group-append">
@@ -151,10 +151,14 @@
                 </div>
               </div>
 
-              <div>
-                <input type="submit" value="Preview" class="btn btn-lg btn-secondary">
-                <input type="submit" value="G-code" class="btn btn-lg btn-primary" formaction="/gcode">
-              </div>
+              <div class="row mb-4">
+                <div class="col-lg-6">
+                  <input type="submit" value="Preview" class="btn btn-block btn-secondary">
+                </div>
+                <div class="col-lg-6">
+                  <input type="submit" value="G-code" class="btn btn-block btn-primary" formaction="/gcode">
+                </div>
+                </div>
             </fieldset>
           </form>
           <footer class="text-center">
