@@ -4,8 +4,89 @@ function getData() {
     return formData;
 }
 
+// from https://stackoverflow.com/questions/768268/how-to-calculate-md5-hash-of-a-file-using-javascript/768295#768295
+function calculateMD5Hash(file, bufferSize) {
+    var def = Q.defer();
+
+    var fileReader = new FileReader();
+    var fileSlicer = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
+    var hashAlgorithm = new SparkMD5();
+    var totalParts = Math.ceil(file.size / bufferSize);
+    var currentPart = 0;
+    var startTime = new Date().getTime();
+
+    fileReader.onload = function(e) {
+        currentPart += 1;
+
+        def.notify({
+            currentPart: currentPart,
+            totalParts: totalParts
+        });
+
+        var buffer = e.target.result;
+        hashAlgorithm.appendBinary(buffer);
+
+        if (currentPart < totalParts) {
+            processNextPart();
+            return;
+        }
+
+        def.resolve({
+            hashResult: hashAlgorithm.end(),
+            duration: new Date().getTime() - startTime
+        });
+    };
+
+    fileReader.onerror = function(e) {
+        def.reject(e);
+    };
+
+    function processNextPart() {
+        var start = currentPart * bufferSize;
+        var end = Math.min(start + bufferSize, file.size);
+        fileReader.readAsBinaryString(fileSlicer.call(file, start, end));
+    }
+
+    processNextPart();
+    return def.promise;
+}
+
+function hashImage() {
+    var input = document.getElementById('image');
+    if (!input.files.length) {
+        return;
+    }
+
+    var file = input.files[0];
+    var bufferSize = Math.pow(1024, 2) * 10; // 10MB
+
+    return calculateMD5Hash(file, bufferSize); // promise
+}
+
+function verify() {
+    return true;
+}
+
+function precacheData(hash) {
+    // we must modify our request a bit
+    var formData = $('#main').serializeArray().reduce(function(obj, item) {
+        obj[item.name] = item.value;
+        return obj;
+    }, {});
+    formData.hash = hash;
+    console.log(formData);
+    return formData;
+}
+
+function showPreview(xhr) {
+    $('#preview').html(xhr.responseText);
+}
+
 function preview() {
     console.log('preview');
+    if(!verify())
+        return false; // warn?
+
     var formData = getData();
     // disable button
     $(this).prop("disabled", true);
@@ -14,24 +95,62 @@ function preview() {
     $(this).html(
         `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`
     );
-    $.post({
-        url: '/api/preview',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: (data, status, xhr) => $('#preview').html(xhr.responseText),
-        error: () => alert("err"),
-        complete: () => {
-            $(this).prop("disabled", false);
-            $(this).html(oldHtml);
-        }
+
+    // compute!
+    hashImage().then((res) => {
+        var hash = res.hashResult;
+
+        console.log(hash);
+
+        var formData = precacheData(hash);
+
+        $.post({
+            url: '/api/preview/precache',
+            data: formData,
+            success: (data, status, xhr) => {
+                showPreview(xhr);
+                console.log("Precache hit!");
+            },
+            error: () => {
+                // not cached
+                $.post({
+                    url: '/api/preview',
+                    data: getData(),
+                    processData: false,
+                    contentType: false,
+                    success: (data, status, xhr) => {
+                        showPreview(xhr);
+                        console.log("Precache miss :(");
+                    },
+                    error: (err) => alert(err)
+                });
+            }
+        });
+    }).catch((err) => {
+        console.log(err);
+    }).finally(() => {
+        $(this).prop("disabled", false);
+        $(this).html(oldHtml);
     });
 
     return false;
 }
 
+function downloadFile(data) {
+    var blob = new Blob([data]);
+    var link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = "out.nc";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 function gcode() {
     console.log('gcode');
+    if(!verify())
+        return false; // warn?
+
     var formData = getData();
     // disable button
     $(this).prop("disabled", true);
@@ -40,26 +159,39 @@ function gcode() {
     $(this).html(
         `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`
     );
-    $.post({
-        url: '/api/gcode',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: (data, status, xhr) => {
-            var blob = new Blob([data]);
-            var link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = "out.nc";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        },
-        error: () => alert("err"),
-        complete: () => {
-            $(this).prop("disabled", false);
-            $(this).html(oldHtml);
-        }
-    });
+
+    hashImage().then((res) =>
+                     {
+                         var hash = res.hashResult;
+
+                         var formData = precacheData(hash);
+
+                         $.post({
+                             url: '/api/gcode/precache',
+                             data: formData,
+                             success: (data, status, xhr) => {
+                                 downloadFile(data);
+                                 console.log("Precache hit!");
+                             },
+                             error: () => {
+                                 $.post({
+                                     url: '/api/gcode',
+                                     data: getData(),
+                                     processData: false,
+                                     contentType: false,
+                                     success: (data, status, xhr) => {
+                                         downloadFile(data);
+                                         console.log("Precache miss :(");
+                                     },
+                                     error: (err) => alert(err)
+                                 });
+                             }
+                         });
+                     }).finally(() =>
+                                {
+                                    $(this).prop("disabled", false);
+                                    $(this).html(oldHtml);
+                                });
 
     return false;
 }

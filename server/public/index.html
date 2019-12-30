@@ -15,7 +15,7 @@
             This is an experimental web interface to <a href="https://github.com/built1n/rastercarve">RasterCarve</a>, a CNC engraving toolpath generator. To begin, upload an image below. The defaults can be safely kept as they are.
           </p>
 
-          <form method="POST" id="main" action="/api/gcode" enctype="multipart/form-data">
+          <form method="POST" id="main" action="javascript:void(0);" enctype="multipart/form-data">
             <fieldset>
               <legend>Input & Scaling</legend>
               <div class="form-group">
@@ -23,7 +23,7 @@
                   Image to engrave:
                 </label>
                 <div class="custom-file">
-                  <input type="file" class="custom-file-input" name="image" aria-describedby="fileInput">
+                  <input type="file" class="custom-file-input" id="image" name="image" aria-describedby="fileInput">
                   <label class="custom-file-label" for="image">Choose an image...</label>
                 </div>
               </div>
@@ -44,7 +44,7 @@
             </fieldset>
 
             <fieldset>
-              <legend>Machine & Tool</legend>
+              <legend>Machine & Tool Options</legend>
 
               <div class="form-row">
                 <div class="form-group col-md-6">
@@ -104,7 +104,7 @@
             </fieldset>
 
             <fieldset>
-              <legend>Engraving options</legend>
+              <legend>Engraving Options</legend>
 
               <div class="form-row">
                 <div class="form-group col-md-6">
@@ -174,6 +174,8 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/q.js/1.4.1/q.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/2.0.2/spark-md5.min.js"></script>
     <script src="/js/rastercarve-web.js"></script>
   </body>
 </html>

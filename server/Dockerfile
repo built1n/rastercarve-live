@@ -18,7 +18,7 @@ RUN pip3 install rastercarve
 
 WORKDIR /app
 
-RUN mkdir -p /app/output
+RUN mkdir -p /app/output /app/cache
 
 COPY package.json package-lock.json /app/
 

@@ -5,8 +5,6 @@ const http = require('http');
 const morgan = require('morgan')
 const os = require('os');
 const { exec } = require('child_process');
-const tmp = require('tmp');
-const uniqueFilename = require('unique-filename');
 const bodyParser = require('body-parser');
 const compress = require('compression');
 const crypto = require('crypto');
@@ -24,7 +22,11 @@ app.use(compress());
 
 const port = 8080;
 
+// output NC and SVG files
 const OUTDIR="/app/output/"; // keep trailing slash
+
+// cache for uploaded images
+const CACHEDIR="/app/cache/";
 
 // try not to take forever
 const limits = {
@@ -48,21 +50,40 @@ const checks = [
     check('resolution').isFloat({min: limits.min_res})
 ];
 
-// returns hash object
+const precached_checks = [
+    check('hash').isHash('md5'),
+    check('dimension').isIn(['width', 'height']),
+    check('size').isFloat({gt: 0, max: limits.max_size}),
+    check('feed').isFloat({gt: 0}),
+    check('plunge').isFloat({gt: 0}),
+    check('safez').isFloat({gt: 0}),
+    check('endz').isFloat({gt: 0}),
+    check('toolangle').isFloat({gt: limits.min_toolangle, lt: 180}),
+    check('depth').isFloat({gt: limits.min_depth}),
+    check('lineangle').isFloat({min: 0, lt: 90}),
+    check('stepover').isFloat({min: 100}),
+    check('resolution').isFloat({min: limits.min_res})
+];
+
+const query_checks = [
+    check('hash').isHash('md5')
+];
+
+// return hex digest
 function hashfile(path) {
   return new Promise((resolve, reject) => {
-      const sha256 = crypto.createHash('sha256');
+      const md5 = crypto.createHash('md5');
       const stream = fs.createReadStream(path);
       stream.on('error', err => reject(err));
-      stream.on('data', chunk => sha256.update(chunk));
-      stream.on('end', () => resolve(sha256));
+      stream.on('data', chunk => md5.update(chunk));
+      stream.on('end', () => resolve(md5.digest('hex')));
   });
 }
 
 function hashstring(str) {
-    const sha256 = crypto.createHash('sha256');
-    sha256.update(str);
-    return sha256.digest('hex');
+    const md5 = crypto.createHash('md5');
+    md5.update(str);
+    return md5.digest('hex');
 }
 
 // hex hash of json body
@@ -120,7 +141,7 @@ function gcode(req, res) {
             return res.download(outname); // hit!
         }
 
-        var tmpname = uniqueFilename(os.tmpdir());
+        var tmpname = CACHEDIR + file.md5;
         file.mv(tmpname);
 
         var cmd = buildcmd(req.body, tmpname) + ' > ' + outname;
@@ -134,6 +155,60 @@ function gcode(req, res) {
     } catch(err) {
         //throw err;
         res.status(500).send(err);
+    }
+}
+
+function gcode_precached(req, res) {
+    console.log("G-code Precache request");
+    console.log(req.body);
+
+    const errors = validationResult(req);
+    if(!errors.isEmpty())
+    {
+        console.log("failed...");
+        return res.status(422).json(errors.array());
+    }
+
+    try {
+        var filehash = req.body.hash;
+        var imgname = CACHEDIR + filehash;
+
+        if(!fs.existsSync(imgname))
+            return res.status(404).send("not in cache");
+
+        hashfile(imgname).then((hash) => {
+            if(hash != filehash) {
+                console.log("Not in cache");
+                console.log(fs.existsSync(imgname));
+                console.log(hash == filehash);
+                console.log(hash);
+                return res.status(404).send("not in cache");
+            }
+
+            delete req.body.hash; // normalize req.body so it's the same as the uncached requests
+
+            // check output cache
+            var basename = OUTDIR + hashstring(filehash + hashbody(req.body));
+            var outname = basename + '.nc';
+
+            if(fs.existsSync(outname))
+            {
+                console.log("Cache hit!");
+                return res.download(outname); // hit!
+            }
+
+            var cmd = buildcmd(req.body, imgname) + ' > ' + outname;
+
+            exec(cmd, (err, stdout, stderr) =>
+                 {
+                     if(err)
+                         throw err;
+                     res.download(outname);
+                 });
+        });
+    } catch(err) {
+        res.status(500).header('Content-type', 'text/plain').send(err);
+        throw err;
     }
 }
 
@@ -183,7 +258,7 @@ function preview(req, res) {
         }
         else
         {
-            var tmpname = uniqueFilename(os.tmpdir());
+            var tmpname = CACHEDIR + file.md5;
             file.mv(tmpname);
 
             cmd = buildpreviewcmd_fullpipe(req.body, tmpname, ncname, outname);
@@ -201,8 +276,114 @@ function preview(req, res) {
     }
 }
 
+function preview_precached(req, res) {
+    console.log("Precache request");
+    console.log(req.body);
+
+    const errors = validationResult(req);
+    if(!errors.isEmpty())
+    {
+        console.log("failed...");
+        return res.status(422).json(errors.array());
+    }
+
+    try {
+        var filehash = req.body.hash;
+        var imgname = CACHEDIR + filehash;
+
+        if(!fs.existsSync(imgname))
+            return res.status(404).send("not in cache");
+
+        hashfile(imgname).then((hash) => {
+            if(hash != filehash) {
+                console.log("Not in cache");
+                console.log(fs.existsSync(imgname));
+                console.log(hash == filehash);
+                console.log(hash);
+                return res.status(404).send("not in cache");
+            }
+
+            delete req.body.hash; // normalize req.body so it's the same as the uncached requests
+
+            // check output cache
+            var basename = OUTDIR + hashstring(filehash + hashbody(req.body));
+            var outname = basename + '.svg';
+
+            if(fs.existsSync(outname))
+            {
+                console.log("Cache hit!");
+                return res.sendFile(outname); // hit!
+            }
+
+            // see if g-code already exists
+            var ncname = basename + '.nc';
+
+            var cmd;
+            if(fs.existsSync(ncname))
+            {
+                cmd = buildpreviewcmd_cached(req.body, ncname, outname);
+            }
+            else
+            {
+                cmd = buildpreviewcmd_fullpipe(req.body, imgname, ncname, outname);
+                console.log(cmd);
+            }
+
+            exec(cmd, (err, stdout, stderr) =>
+                 {
+                     if(err) throw err;
+                     res.sendFile(outname);
+                 });
+        });
+    } catch(err) {
+        res.status(500).header('Content-type', 'text/plain').send(err);
+        throw err;
+    }
+}
+
+function preupload(req, res) {
+    try {
+        if(!req.files || !req.files.image)
+            return res.status(400).send('no image');
+        var file = req.files.file;
+
+        var cachename = CACHEDIR + file.md5;
+
+        if(!fs.existsSync(cachename))
+            file.mv(cachename);
+
+        res.json({success: true});
+    } catch(err) {
+        res.status(500).header('Content-type', 'text/plain').send(err);
+    }
+}
+
+function query(req, res) {
+    const errors = validationResult(req);
+    if(!errors.isEmpty())
+        return res.status(422).json(errors.array());
+
+    try {
+        var hash = req.body.hash;
+        var path = CACHEDIR + hash;
+        var ret = { found: false };
+        if(fs.existsSync(path) && hashfile(path) == hash) {
+            ret.found = true;
+        }
+        res.json(ret);
+    } catch(err) {
+        res.status(500).header('Content-type', 'text/plain').send(err);
+    }
+}
+
 app.post('/api/gcode', checks, gcode)
 app.post('/api/preview', checks, preview);
+
+app.post('/api/gcode/precache', precached_checks, gcode_precached)
+app.post('/api/preview/precache', precached_checks, preview_precached);
+
+app.post('/api/precache', preupload);
+app.post('/api/query', query_checks, query);
 
 var httpServer = http.createServer(app);
 httpServer.listen(port);
