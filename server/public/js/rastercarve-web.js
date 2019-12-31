@@ -139,6 +139,7 @@ function preview(button, download) {
         return false; // warn?
 
     var formData = getData();
+
     // disable button
     $(button).prop("disabled", true);
     var oldHtml = $(button).html();
@@ -164,6 +165,8 @@ function preview(button, download) {
                 else
                     showPreview(xhr);
                 console.log("Precache hit!");
+                $(button).prop("disabled", false);
+                $(button).html(oldHtml);
             },
             error: () => {
                 // not cached
@@ -179,12 +182,14 @@ function preview(button, download) {
                             showPreview(xhr);
                         console.log("Precache miss :(");
                     },
-                    error: (err) => alert(err)
+                    error: (err) => alert(err),
+                    complete: () => {
+                        $(button).prop("disabled", false);
+                        $(button).html(oldHtml);
+                    }
                 });
             },
             complete: () => {
-                $(button).prop("disabled", false);
-                $(button).html(oldHtml);
             }
         });
     }).catch((err) => {
@@ -218,6 +223,8 @@ function gcode() {
             success: (data, status, xhr) => {
                 downloadFile(data, getFileName() + '.nc');
                 console.log("Precache hit!");
+                $(this).prop("disabled", false);
+                $(this).html(oldHtml);
             },
             error: () => {
                 $.post({
@@ -228,15 +235,13 @@ function gcode() {
                     success: (data, status, xhr) => {
                         downloadFile(data, getFileName() + '.nc');
                         console.log("Precache miss :(");
+                    },
+                    error: (err) => alert(err),
+                    complete: () => {
                         $(this).prop("disabled", false);
                         $(this).html(oldHtml);
-                    },
-                    error: (err) => alert(err)
+                    }
                 });
-            },
-            complete: () => {
-                $(this).prop("disabled", false);
-                $(this).html(oldHtml);
             }
         });
     });
