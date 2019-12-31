@@ -107,10 +107,11 @@ beforePan = function(oldPan, newPan){
 
 function showPreview(xhr) {
     $('#preview').html(xhr.responseText);
-    $('svg').css('height', '100%');
-    $('svg').css('width', '100%');
+    $('#preview').children().attr("id", "preview-image");
+    $('#preview-image').css('height', '100%');
+    $('#preview-image').css('width', '100%');
 
-    svgPanZoom('svg',
+    svgPanZoom('#preview-image',
                {
                    zoomEnabled: true,
                    controlIconsEnabled: true,
@@ -143,7 +144,7 @@ function preview(button, download) {
     var oldHtml = $(button).html();
     // add spinner to button
     $(button).html(
-        `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`
+        `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;Loading...`
     );
 
     // compute!
@@ -203,7 +204,7 @@ function gcode() {
     var oldHtml = $(this).html();
     // add spinner to button
     $(this).html(
-        `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`
+        `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;Loading...`
     );
 
     hashImage().then((res) => {
@@ -255,7 +256,7 @@ function init() {
 
     Split(['#one', '#two'], {
         sizes: [50, 50],
-        minSize: [300, 100],
+        minSize: [300, 200],
         cursor: 'col-resize',
     });
 

@@ -87,6 +87,14 @@ span {
     width: 100%; height:100%;
 }
 
+.btn-block {
+    display: flex;align-items: center;justify-content: center;
+}
+
 svg {
     overflow: visible; /* allow showing rounded ends in preview */
 }
+
+.custom-file {
+    overflow: hidden;
+};

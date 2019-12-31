@@ -25,6 +25,9 @@ COPY package.json package-lock.json /app/
 RUN npm config set registry http://registry.npmjs.org/ --global
 RUN npm install --verbose --loglevel=silly
 
+COPY icon/icon.png /app/public/
+COPY res/* /app/public/
+
 COPY index.js /app/
 COPY public /app/public
 
