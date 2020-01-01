@@ -18,7 +18,8 @@ RUN git clone --recursive https://github.com/built1n/rastercarve-preview && \
 
 WORKDIR /app
 
-RUN mkdir -p /app/output /app/cache
+RUN mkdir -p /app/output
+COPY util /app/util
 
 COPY package.json package-lock.json /app/
 
@@ -30,5 +31,7 @@ COPY res/* /app/public/
 
 COPY index.js /app/
 COPY public /app/public
+
+RUN /app/util/subst-version.sh /app
 
 CMD cd /app && npm start

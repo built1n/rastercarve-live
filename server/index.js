@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 const compress = require('compression');
 const crypto = require('crypto');
 const {check, validationResult} = require('express-validator');
+const findRemoveSync = require('find-remove');
 
 const app = express();
 
@@ -20,13 +21,14 @@ app.use(morgan('combined'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(compress());
 
+const minute = 60 * 1000; // ms for setinterval
+const purge_interval = 1 * minute;
+const cache_lifetime = 15 * minute;
+
 const port = 8080;
 
-// output NC and SVG files
-const OUTDIR="/app/output/"; // keep trailing slash
-
-// cache for uploaded images
-const CACHEDIR="/app/cache/";
+// temp directory to cache input and output (NC and SVG)
+const OUTDIR="/app/output/";
 
 // try not to take forever
 const limits = {
@@ -141,7 +143,7 @@ function gcode(req, res) {
             return res.download(outname); // hit!
         }
 
-        var tmpname = CACHEDIR + file.md5;
+        var tmpname = OUTDIR + file.md5;
         file.mv(tmpname);
 
         var cmd = buildcmd(req.body, tmpname) + ' > ' + outname;
@@ -171,7 +173,7 @@ function gcode_precached(req, res) {
 
     try {
         var filehash = req.body.hash;
-        var imgname = CACHEDIR + filehash;
+        var imgname = OUTDIR + filehash;
 
         if(!fs.existsSync(imgname))
             return res.status(404).send("not in cache");
@@ -258,8 +260,9 @@ function preview(req, res) {
         }
         else
         {
-            var tmpname = CACHEDIR + file.md5;
+            var tmpname = OUTDIR + file.md5;
             file.mv(tmpname);
+            console.log(tmpname);
 
             cmd = buildpreviewcmd_fullpipe(req.body, tmpname, ncname, outname);
             console.log(cmd);
@@ -289,7 +292,7 @@ function preview_precached(req, res) {
 
     try {
         var filehash = req.body.hash;
-        var imgname = CACHEDIR + filehash;
+        var imgname = OUTDIR + filehash;
 
         if(!fs.existsSync(imgname))
             return res.status(404).send("not in cache");
@@ -347,7 +350,7 @@ function preupload(req, res) {
             return res.status(400).send('no image');
         var file = req.files.file;
 
-        var cachename = CACHEDIR + file.md5;
+        var cachename = OUTDIR + file.md5;
 
         if(!fs.existsSync(cachename))
             file.mv(cachename);
@@ -365,7 +368,7 @@ function query(req, res) {
 
     try {
         var hash = req.body.hash;
-        var path = CACHEDIR + hash;
+        var path = OUTDIR + hash;
         var ret = { found: false };
         if(fs.existsSync(path) && hashfile(path) == hash) {
             ret.found = true;
@@ -374,6 +377,13 @@ function query(req, res) {
     } catch(err) {
         res.status(500).header('Content-type', 'text/plain').send(err);
     }
+}
+
+function purge() {
+    console.log("purging cache: " + OUTDIR);
+
+    var removed = findRemoveSync(OUTDIR, {files:"*.*", age: {seconds: cache_lifetime / 1000}});
+    console.log(removed);
 }
 
 app.post('/api/gcode', checks, gcode)
@@ -388,3 +398,5 @@ app.post('/api/query', query_checks, query);
 var httpServer = http.createServer(app);
 httpServer.listen(port);
 console.log("listening on " + port);
+
+setInterval(purge, purge_interval);

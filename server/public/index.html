@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html style="height:100%">
   <head>
-    <title>RasterCarve</title>
+    <title>RasterCarve - Generate G-code to Engrave Images</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
@@ -26,8 +26,8 @@
     <div style="height:100%">
       <div class="split" id="one" style="width:50%;">
         <nav class="navbar navbar-light bg-primary text-white">
-          <a class="navbar-brand text-white">
-            <b>RasterCarve</b> <span>v1.1.1</span>
+          <a class="navbar-brand text-white" href="#">
+            <b>RasterCarve Live</b> <span>v__VERSION__</span>
           </a>
 
           <ul class="navbar-nav flex-row">
@@ -41,7 +41,7 @@
         <div class="container" style="overflow-y:auto;position:relative;">
 
           <p class="mt-3">
-            This is an experimental web interface to <a href="https://github.com/built1n/rastercarve">RasterCarve</a>, a CNC engraving toolpath generator. To begin, upload an image below. The defaults can be safely kept as they are.
+            This is a web interface to <a href="https://github.com/built1n/rastercarve">RasterCarve</a>, a CNC engraving toolpath generator. Its toolpathing strategy uses many parallel lines of varying depth to convey brightness information of the input image. To begin, upload an image below. The defaults are safe values for MDF.
           </p>
 
           <form method="POST" class="needs-validation" novalidate id="main" action="javascript:void(0);" enctype="multipart/form-data">
@@ -120,7 +120,7 @@
 
               <div class="form-row">
                 <div class="form-group col-md-6">
-                  <label for="toolangle">Tool included angle:</label>
+                  <label for="toolangle">V-bit included angle:</label>
 
                   <div class="input-group mb-3">
                     <input type="number" class="form-control" value="30" min="5" max="179" aria-label="Tool angle" aria-describedby="basic-addon2" name="toolangle" required>
@@ -198,17 +198,26 @@
                   <!--<button id="pbutton" class="btn btn-block btn-secondary" type="submit">Preview</button>-->
                 </div>
                 <div class="col-lg-6">
-                  <button id="gbutton" class="btn btn-block btn-primary" type="submit"><img src="/download-icon.svg" height="100%"/>&nbsp;Download G-Code</button>
+                  <button id="gbutton" class="btn btn-block btn-primary" type="submit"><img src="/download-icon.svg" height="100%"/>&nbsp;Download G-code</button>
                 </div>
               </div>
             </fieldset>
           </form>
-          <footer class="text-center">
-            Copyright &copy; 2019 <a href="mailto:me@fwei.tk">Franklin Wei</a>.
-          </footer>
+          <center class="mb-2">
+            <small>
+              RasterCarve Live v__VERSION__ &copy; 2019-2020 <a href="mailto:me@fwei.tk">Franklin Wei</a>
+            </small>
+            <br>
+            <small>
+              <a class="collapsed" href="#privacy-policy" data-toggle="collapse">Privacy</a>
+              <div id="privacy-policy" class="collapse">
+                This application logs metadata, including visitor IP addresses, for internal statistics and optimization only. Input images and output files (including G-code and preview images) are cached by the server for performance reasons; these are never shared and are automatically erased 15 minutes after their initial upload. Visitor data is encrypted in transit with TLS and is never disclosed to a third party.
+              </div>
+            </small>
+          </center>
         </div>
       </div>
-      <div class="split" id="two">
+      <div class="split bg-light" id="two">
         <div id="preview">
           <table class="box">
             <tr>
@@ -227,7 +236,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.5.11/split.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/q.js/1.4.1/q.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/2.0.2/spark-md5.min.js"></script>
-    <script src="http://hammerjs.github.io/dist/hammer.min.js"></script>
     <script src="/js/svg-pan-zoom.min.js"></script>
     <script src="/js/rastercarve-web.js"></script>
   </body>

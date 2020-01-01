@@ -1,6 +1,6 @@
 {
-    "name": "rastercarve-web",
-    "version": "1.1.0",
+    "name": "rastercarve-live",
+    "version": "1.1.2",
     "description": "Web interface to rastercarve",
     "main": "index.js",
     "scripts": {
@@ -12,21 +12,23 @@
         "url": "git+https://github.com/built1n/rastercarve-web.git"
     },
     "keywords": [
-        "cnc"
+        "cnc",
+        "cam"
     ],
     "author": "Franklin Wei",
-    "license": "GPLv2+",
+    "license": "GPL-2.0-or-later",
     "bugs": {
-        "url": "https://github.com/built1n/rastercarve-web/issues"
+        "url": "https://github.com/built1n/rastercarve-live/issues"
     },
-    "homepage": "https://github.com/built1n/rastercarve-web#readme",
+    "homepage": "https://github.com/built1n/rastercarve-live#readme",
     "dependencies": {
         "body-parser": "^1.19.0",
         "child_process": "^1.0.2",
         "compression": "^1.7.4",
         "express": "^4.17.1",
         "express-fileupload": "^1.1.5",
-        "express-validator": "^6.3.0",
+        "express-validator": "^6.3.1",
+        "find-remove": "^2.0.0",
         "fs": "0.0.1-security",
         "http": "0.0.0",
         "morgan": "^1.9.1",
