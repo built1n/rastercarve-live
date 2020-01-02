@@ -30,6 +30,9 @@ const port = 8080;
 // temp directory to cache input and output (NC and SVG)
 const OUTDIR="/app/output/";
 
+// location of hashed sample files
+const SAMPLEDIR="/app/samples-hashed/";
+
 // try not to take forever
 const limits = {
     max_size: 100,
@@ -175,6 +178,11 @@ function gcode_precached(req, res) {
         var filehash = req.body.hash;
         var imgname = OUTDIR + filehash;
 
+        // check sample dir, too
+        var samplename = SAMPLEDIR + filehash;
+        if(fs.existsSync(samplename))
+            imgname = samplename;
+
         if(!fs.existsSync(imgname))
             return res.status(404).send("not in cache");
 
@@ -293,6 +301,11 @@ function preview_precached(req, res) {
     try {
         var filehash = req.body.hash;
         var imgname = OUTDIR + filehash;
+
+        // check sample dir, too
+        var samplename = SAMPLEDIR + filehash;
+        if(fs.existsSync(samplename))
+            imgname = samplename;
 
         if(!fs.existsSync(imgname))
             return res.status(404).send("not in cache");

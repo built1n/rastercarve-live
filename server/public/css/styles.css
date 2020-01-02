@@ -97,4 +97,9 @@ svg {
 
 .custom-file {
     overflow: hidden;
-};
+}
+
+#sample-gallery {
+    overflow-x: auto;
+    white-space: nowrap;
+}

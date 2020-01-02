@@ -1,15 +1,40 @@
+// Copyright (C) 2019-2020 Franklin Wei
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+// KIND, either express or implied.
+
 function getData() {
     var e = document.getElementById('main');
     var formData = new FormData(e);
     return formData;
 }
 
+// choose a sample image by its hash
+var filehash = null;
+
 function hasFile() {
     return document.getElementById('image').files.length == 1;
 }
 
-function getFileName() {
-    return document.getElementById('image').files[0].name;
+function getFilename()
+{
+    return $('.custom-file-label').text();
+}
+
+// set name of uploaded file
+function setFilename(filename)
+{
+    $('.custom-file-label').text(filename);
+    $('#image')[0].required = true; // may have been reset by useSample
+    filehash = null; // reset
+
+    if($('#main')[0].size.value.length == 0)
+        $('#main')[0].size.value = "8"; // arbitrary
 }
 
 // from https://stackoverflow.com/questions/768268/how-to-calculate-md5-hash-of-a-file-using-javascript/768295#768295
@@ -60,6 +85,9 @@ function calculateMD5Hash(file, bufferSize) {
 }
 
 function hashImage() {
+    if(filehash)
+        return new Promise((resolve, reject) => resolve({ hashResult: filehash })); // preview image hash -- server has this file on hand
+
     var input = document.getElementById('image');
     if (!input.files.length) {
         return;
@@ -88,23 +116,6 @@ function precacheData(hash) {
     return formData;
 }
 
-beforePan = function(oldPan, newPan){
-    var stopHorizontal = false
-    , stopVertical = false
-    , gutterWidth = 100
-    , gutterHeight = 100
-    // Computed variables
-    , sizes = this.getSizes()
-    , leftLimit = -((sizes.viewBox.x + sizes.viewBox.width) * sizes.realZoom) + gutterWidth
-    , rightLimit = sizes.width - gutterWidth - (sizes.viewBox.x * sizes.realZoom)
-    , topLimit = -((sizes.viewBox.y + sizes.viewBox.height) * sizes.realZoom) + gutterHeight
-    , bottomLimit = sizes.height - gutterHeight - (sizes.viewBox.y * sizes.realZoom)
-    customPan = {}
-    customPan.x = Math.max(leftLimit, Math.min(rightLimit, newPan.x))
-    customPan.y = Math.max(topLimit, Math.min(bottomLimit, newPan.y))
-    return customPan
-}
-
 function showPreview(xhr) {
     $('#preview').html(xhr.responseText);
     $('#preview').children().attr("id", "preview-image");
@@ -117,7 +128,22 @@ function showPreview(xhr) {
                    controlIconsEnabled: true,
                    fit: 1,
                    center: 1,
-                   beforePan: beforePan,
+                   beforePan: function(oldPan, newPan){
+                       var stopHorizontal = false
+                       , stopVertical = false
+                       , gutterWidth = 100
+                       , gutterHeight = 100
+                       // Computed variables
+                       , sizes = this.getSizes()
+                       , leftLimit = -((sizes.viewBox.x + sizes.viewBox.width) * sizes.realZoom) + gutterWidth
+                       , rightLimit = sizes.width - gutterWidth - (sizes.viewBox.x * sizes.realZoom)
+                       , topLimit = -((sizes.viewBox.y + sizes.viewBox.height) * sizes.realZoom) + gutterHeight
+                       , bottomLimit = sizes.height - gutterHeight - (sizes.viewBox.y * sizes.realZoom)
+                       customPan = {}
+                       customPan.x = Math.max(leftLimit, Math.min(rightLimit, newPan.x))
+                       customPan.y = Math.max(topLimit, Math.min(bottomLimit, newPan.y))
+                       return customPan
+                   },
                    zoomScaleSensitivity: 0.35,
                    maxZoom: 20
                });
@@ -161,7 +187,7 @@ function preview(button, download) {
             data: formData,
             success: (data, status, xhr) => {
                 if(download)
-                    downloadFile(xhr.responseText, getFileName() + '.svg');
+                    downloadFile(xhr.responseText, getFilename() + '.svg');
                 else
                     showPreview(xhr);
                 console.log("Precache hit!");
@@ -177,7 +203,7 @@ function preview(button, download) {
                     contentType: false,
                     success: (data, status, xhr) => {
                         if(download)
-                            downloadFile(xhr.responseText, getFileName() + '.svg');
+                            downloadFile(xhr.responseText, getFilename() + '.svg');
                         else
                             showPreview(xhr);
                         console.log("Precache miss :(");
@@ -221,7 +247,7 @@ function gcode() {
             url: '/api/gcode/precache',
             data: formData,
             success: (data, status, xhr) => {
-                downloadFile(data, getFileName() + '.nc');
+                downloadFile(data, getFilename() + '.nc');
                 console.log("Precache hit!");
                 $(this).prop("disabled", false);
                 $(this).html(oldHtml);
@@ -233,7 +259,7 @@ function gcode() {
                     processData: false, // necessary here but not above
                     contentType: false,
                     success: (data, status, xhr) => {
-                        downloadFile(data, getFileName() + '.nc');
+                        downloadFile(data, getFilename() + '.nc');
                         console.log("Precache miss :(");
                     },
                     error: (err) => alert(err),
@@ -249,15 +275,36 @@ function gcode() {
     return false;
 }
 
+var samples = null; // set by init()
+
+function basename(str)
+{
+    var base = new String(str).substring(str.lastIndexOf('/') + 1);
+    return base;
+}
+
+function useSample(event) {
+    console.log(event);
+    var idx = $(event.currentTarget).data('index');
+    console.log(idx);
+
+    setFilename(basename(samples[idx].filename));
+    filehash = samples[idx].hash;
+
+    // disable verification on the file input for now (will revert
+    // back whenever a new file is selected)
+    $('#image')[0].required = false;
+}
+
 function init() {
     $('input[type="file"]').change(function(e){
-        var fileName = e.target.files[0].name;
-        $('.custom-file-label').text(fileName);
+        var filename = e.target.files[0].name;
+        setFilename(filename);
     });
 
     // prefilled by browser?
     if(hasFile())
-        $('.custom-file-label').text(getFileName);
+        setFilename(getFilename());
 
     Split(['#one', '#two'], {
         sizes: [50, 50],
@@ -265,12 +312,50 @@ function init() {
         cursor: 'col-resize',
     });
 
+    // populate sample gallery
+    $.getJSON("/samples.json")
+        .done((data) =>
+              {
+                  samples = data.samples;
+                  console.log(samples);
+                  var g = $('#sample-gallery');
+                  g.empty();
+                  for(var i = 0; i < samples.length; i++)
+                      g.append($('<a/>',
+                                 {
+                                     href: "#",
+                                     class: "mr-2",
+                                 })
+                               .html($('<img/>',
+                                       {
+                                           src: samples[i].filename,
+                                           class: "rounded"
+                                       }))
+                               .prop('title', basename(samples[i].filename))
+                               .click(useSample)
+                               .data('index', i));
+              });
+
     $("#pbutton").click(() => preview($('#pbutton'), false));
     $('#download-preview').click(() => preview($('#pbutton'), true));
     $("#gbutton").click(gcode);
     $(document).on('shown.bs.collapse', function(event){
-        //console.log( "in! print e: " +event.type);
-        event.target.scrollIntoView({ behavior: 'smooth' });
+        if(event.target.id === "privacy-policy")
+            event.target.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // initialize form validation
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+        form.addEventListener('submit', function(event) {
+            if (form.checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
     });
 }
 
@@ -279,17 +364,5 @@ $(document).ready(init);
 (function() {
   'use strict';
   window.addEventListener('load', function() {
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    var forms = document.getElementsByClassName('needs-validation');
-    // Loop over them and prevent submission
-    var validation = Array.prototype.filter.call(forms, function(form) {
-      form.addEventListener('submit', function(event) {
-        if (form.checkValidity() === false) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        form.classList.add('was-validated');
-      }, false);
-    });
   }, false);
 })();

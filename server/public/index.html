@@ -54,6 +54,14 @@
                   <input type="file" class="custom-file-input" id="image" name="image" aria-describedby="fileInput" required>
                   <label class="custom-file-label" for="image">Choose an image...</label>
                 </div>
+                <small>Or <a href="#sample-container" data-toggle="collapse">select a sample image</a>.</small>
+                <div class="collapse border rounded container bg-light" id="sample-container">
+                  <div id="sample-gallery">
+                    Sample loading failed.
+                    <!-- will be populated by JS -->
+                  </div>
+                  <small class="text-muted">All images are in the public domain.</small>
+                </div>
               </div>
 
               <div class="form-group">
@@ -204,10 +212,10 @@
           </form>
           <center class="mb-2">
             <small>
-              RasterCarve Live v__VERSION__ &copy; 2019-2020 <a href="mailto:me@fwei.tk">Franklin Wei</a>
-            </small>
-            <br>
-            <small>
+              RasterCarve Live v__VERSION__ Copyright &copy; 2019-2020 <a href="mailto:me@fwei.tk">Franklin Wei</a>.
+              <br>
+              This software is distributed on an "AS IS" basis, <em>without warranty of any kind</em>, either express or implied.
+              <br>
               <a class="collapsed" href="#privacy-policy" data-toggle="collapse">Privacy</a>
               <div id="privacy-policy" class="collapse">
                 This application logs metadata, including visitor IP addresses, for internal statistics and optimization only. Input images and output files (including G-code and preview images) are cached by the server for performance reasons; these are never shared and are automatically erased 15 minutes after their initial upload. Visitor data is encrypted in transit with TLS and is never disclosed to a third party.
