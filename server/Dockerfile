@@ -34,7 +34,6 @@ COPY samples /app/samples
 COPY index.js /app/
 COPY public /app/public
 
-RUN /app/util/index-samples.sh /app > /app/public/samples.json
-RUN /app/util/subst-version.sh /app
+RUN /app/util/index-samples.sh /app > /app/public/samples.json && /app/util/subst-version.sh /app
 
 CMD cd /app && npm start

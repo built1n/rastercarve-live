@@ -17,6 +17,9 @@ function getData() {
 // choose a sample image by its hash
 var filehash = null;
 
+var samples = null; // loaded from samples.json, set by init()
+var cursample = -1; // -1 for none
+
 function hasFile() {
     return document.getElementById('image').files.length == 1;
 }
@@ -102,7 +105,7 @@ function hashImage() {
 function verify() {
     var form = document.getElementById('main');
     $('#fakesubmit').click();
-    return form.checkValidity()
+    return form.checkValidity();
 }
 
 function precacheData(hash) {
@@ -159,10 +162,26 @@ function downloadFile(data, filename) {
     document.body.removeChild(link);
 }
 
+function warn(e, msg) {
+    e.popover({
+        content: msg,
+        placement: "bottom",
+        trigger: "focus"
+    }).on('hidden.bs.popover', function (e) {
+        $(this).off('hidden.bs.popover');
+        $(this).popover('dispose');
+    });
+    e.popover('show');
+}
+
 function preview(button, download) {
     console.log('preview');
     if(!verify())
-        return false; // warn?
+    {
+        console.log("verify failed");
+        warn(button, "Invalid parameters.");
+        return false;
+    }
 
     var formData = getData();
 
@@ -227,7 +246,11 @@ function preview(button, download) {
 function gcode() {
     console.log('gcode');
     if(!verify())
-        return false; // warn?
+    {
+        console.log("verify failed");
+        warn($('#gbutton'), "Invalid parameters.");
+        return false;
+    }
 
     var formData = getData();
     // disable button
@@ -275,18 +298,27 @@ function gcode() {
     return false;
 }
 
-var samples = null; // set by init()
-
 function basename(str)
 {
     var base = new String(str).substring(str.lastIndexOf('/') + 1);
     return base;
 }
 
+function getSampleByIndex(idx) {
+    var sample_links = $('#sample-gallery')[0].children;
+    return $($(sample_links[cursample])[0].children[0]); // hack
+}
+
 function useSample(event) {
     console.log(event);
     var idx = $(event.currentTarget).data('index');
     console.log(idx);
+
+    if(cursample >= 0)
+        getSampleByIndex(cursample).removeClass('border-primary').addClass('border-transparent');
+
+    cursample = idx;
+    getSampleByIndex(idx).addClass('border-primary').removeClass('border-transparent');
 
     setFilename(basename(samples[idx].filename));
     filehash = samples[idx].hash;
@@ -300,6 +332,8 @@ function init() {
     $('input[type="file"]').change(function(e){
         var filename = e.target.files[0].name;
         setFilename(filename);
+        cursample = -1; // reset here, not in setFilename, since
+                        // useSample calls that.
     });
 
     // prefilled by browser?
@@ -329,7 +363,7 @@ function init() {
                                .html($('<img/>',
                                        {
                                            src: samples[i].filename,
-                                           class: "rounded"
+                                           class: "border border-transparent rounded"
                                        }))
                                .prop('title', basename(samples[i].filename))
                                .click(useSample)
