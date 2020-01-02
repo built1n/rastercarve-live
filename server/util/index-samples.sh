@@ -21,9 +21,11 @@ first=1
 
 for f in $BASEDIR/samples/*
 do
-    convert $f -thumbnail 256x128 -quality 85% -strip -sampling-factor 4:2:0 $BASEDIR/public/sample-thumbnails/$(basename $f)
-    HASH=$(md5sum $f | awk '{print $1}')
-    cp $f $BASEDIR/samples-hashed/$HASH
+    THUMBNAIL=$BASEDIR/public/sample-thumbnails/$(basename "$f")
+    convert "$f" -thumbnail 300x128 -quality 95% -strip -sampling-factor 4:2:0 "$THUMBNAIL"
+#    jpegoptim -m80 -q $THUMBNAIL
+    HASH=$(md5sum "$f" | awk '{print $1}')
+    cp "$f" $BASEDIR/samples-hashed/$HASH
     if [ $first -eq "1" ]
     then
         first=0
