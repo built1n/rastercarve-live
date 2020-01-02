@@ -54,10 +54,10 @@
                   <input type="file" class="custom-file-input" id="image" name="image" aria-describedby="fileInput" required>
                   <label class="custom-file-label" for="image">Choose an image...</label>
                 </div>
-                <small>Or <a href="#sample-container" data-toggle="collapse">select a sample image</a>.</small>
+                <small>Or <a href="#sample-container" data-toggle="collapse" id="load-samples">select a sample image</a>.</small>
                 <div class="collapse border rounded container bg-light" id="sample-container">
                   <div id="sample-gallery">
-                    Sample loading failed.
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;Loading...
                     <!-- will be populated by JS -->
                   </div>
                   <small class="text-muted">All images are in the public domain.</small>

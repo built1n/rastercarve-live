@@ -315,10 +315,10 @@ function useSample(event) {
     console.log(idx);
 
     if(cursample >= 0)
-        getSampleByIndex(cursample).removeClass('border-primary').addClass('border-transparent');
+        getSampleByIndex(cursample).removeClass('border-primary');
 
     cursample = idx;
-    getSampleByIndex(idx).addClass('border-primary').removeClass('border-transparent');
+    getSampleByIndex(idx).addClass('border-primary');
 
     setFilename(basename(samples[idx].filename));
     filehash = samples[idx].hash;
@@ -328,23 +328,9 @@ function useSample(event) {
     $('#image')[0].required = false;
 }
 
-function init() {
-    $('input[type="file"]').change(function(e){
-        var filename = e.target.files[0].name;
-        setFilename(filename);
-        cursample = -1; // reset here, not in setFilename, since
-                        // useSample calls that.
-    });
-
-    // prefilled by browser?
-    if(hasFile())
-        setFilename(getFilename());
-
-    Split(['#one', '#two'], {
-        sizes: [50, 50],
-        minSize: [300, 200],
-        cursor: 'col-resize',
-    });
+function loadSamples() {
+    if(samples)
+        return; // already loaded
 
     // populate sample gallery
     $.getJSON("/samples.json")
@@ -358,18 +344,39 @@ function init() {
                       g.append($('<a/>',
                                  {
                                      href: "#",
-                                     class: "mr-2",
+                                     class: (i != samples.length - 1) ? "mr-2" : "",
                                  })
                                .html($('<img/>',
                                        {
                                            src: samples[i].filename,
-                                           class: "border border-transparent rounded"
+                                           class: "img-thumbnail"
                                        }))
                                .prop('title', basename(samples[i].filename))
                                .click(useSample)
                                .data('index', i));
-              });
+              })
+        .fail((err) => console.log("JSON query/loading failed."));
+}
 
+function init() {
+    $('input[type="file"]').change(function(e){
+        var filename = e.target.files[0].name;
+        setFilename(filename);
+        cursample = -1; // reset here, not in setFilename, since
+        // useSample calls that.
+    });
+
+    // prefilled by browser?
+    if(hasFile())
+        setFilename(getFilename());
+
+    Split(['#one', '#two'], {
+        sizes: [50, 50],
+        minSize: [300, 200],
+        cursor: 'col-resize',
+    });
+
+    $('#load-samples').click(loadSamples);
     $("#pbutton").click(() => preview($('#pbutton'), false));
     $('#download-preview').click(() => preview($('#pbutton'), true));
     $("#gbutton").click(gcode);
@@ -396,7 +403,7 @@ function init() {
 $(document).ready(init);
 
 (function() {
-  'use strict';
-  window.addEventListener('load', function() {
-  }, false);
+    'use strict';
+    window.addEventListener('load', function() {
+    }, false);
 })();
