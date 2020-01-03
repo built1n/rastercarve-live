@@ -5,8 +5,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     git \
     cmake \
-    imagemagick \
-    jpegoptim
+    imagemagick
 
 RUN git clone --recursive https://github.com/built1n/rastercarve-preview && \
     cd rastercarve-preview && \
