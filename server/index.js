@@ -6,20 +6,22 @@ const morgan = require('morgan')
 const os = require('os');
 const { exec } = require('child_process');
 const bodyParser = require('body-parser');
-const compress = require('compression');
+const compression = require('compression');
 const crypto = require('crypto');
 const {check, validationResult} = require('express-validator');
 const findRemoveSync = require('find-remove');
+const expressStaticGzip = require("express-static-gzip");
 
 const app = express();
 
-const page = fs.readFileSync('public/index.html');
-
-app.use(express.static('public'));
+app.use(compression({threshold:0}));
 app.use(fileUpload({ limits: { fileSize: 50 * 1024 * 1024 } }));
 app.use(morgan('combined'));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(compress());
+
+app.use(expressStaticGzip('dist', {
+    enableBrotli: true
+}))
 
 const minute = 60 * 1000; // ms for setinterval
 const purge_interval = 1 * minute;

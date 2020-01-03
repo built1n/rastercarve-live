@@ -22,19 +22,23 @@ WORKDIR /app
 
 RUN mkdir -p /app/output
 
+RUN npm install yarn --verbose
+
 COPY package.json package-lock.json /app/
 
-RUN npm config set registry http://registry.npmjs.org/ --global
-RUN npm install --verbose --loglevel=silly
+RUN yarn install --verbose
 
+COPY src /app/src
 COPY util /app/util
-
-COPY res/* /app/public/
 COPY samples /app/samples
+COPY static /app/static
+
+COPY *.config.js /app/
 
 COPY index.js /app/
-COPY public /app/public
 
-RUN /app/util/index-samples.sh /app > /app/public/samples.json && /app/util/subst-version.sh /app
+RUN npm run build
+
+RUN /app/util/index-samples.sh /app > /app/dist/samples.json
 
 CMD cd /app && npm start

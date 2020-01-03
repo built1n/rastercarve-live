@@ -11,7 +11,7 @@ then
     exit 1
 fi
 
-mkdir -p $BASEDIR/public/sample-thumbnails
+mkdir -p $BASEDIR/dist/sample-thumbnails
 mkdir -p $BASEDIR/samples-hashed
 
 echo '{'
@@ -21,7 +21,7 @@ first=1
 
 for f in $BASEDIR/samples/*
 do
-    THUMBNAIL=$BASEDIR/public/sample-thumbnails/$(basename "$f")
+    THUMBNAIL=$BASEDIR/dist/sample-thumbnails/$(basename "$f")
     convert "$f" -thumbnail 300x128 -quality 95% -strip -sampling-factor 4:2:0 "$THUMBNAIL"
 #    jpegoptim -m80 -q $THUMBNAIL
     HASH=$(md5sum "$f" | awk '{print $1}')

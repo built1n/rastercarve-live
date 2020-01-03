@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html style="height:100%">
+  <head>
+    <title>RasterCarve Live - Generate G-code to Engrave Images</title>
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <meta name="msapplication-TileColor" content="#007bff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#007bff">
+  </head>
+  <body style="height:100%">
+    <div style="height:100%">
+      <div class="split" id="one" style="width:50%;">
+        <nav class="navbar navbar-light bg-primary text-white">
+          <a class="navbar-brand text-white" href="#">
+            <b>RasterCarve Live</b> <span>v__VERSION__</span>
+          </a>
+
+          <ul class="navbar-nav flex-row">
+            <li class="nav-item">
+              <a class="nav-link p-2" id="github-link" href="https://github.com/built1n/rastercarve-live" target="_blank" rel="noopener" aria-label="GitHub">
+                <svg class="navbar-nav-svg" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 512 499.36" focusable="false"><title>GitHub</title><path d="M256 0C114.64 0 0 114.61 0 256c0 113.09 73.34 209 175.08 242.9 12.8 2.35 17.47-5.56 17.47-12.34 0-6.08-.22-22.18-.35-43.54-71.2 15.49-86.2-34.34-86.2-34.34-11.64-29.57-28.42-37.45-28.42-37.45-23.27-15.84 1.73-15.55 1.73-15.55 25.69 1.81 39.21 26.38 39.21 26.38 22.84 39.12 59.92 27.82 74.5 21.27 2.33-16.54 8.94-27.82 16.25-34.22-56.84-6.43-116.6-28.43-116.6-126.49 0-27.95 10-50.8 26.35-68.69-2.63-6.48-11.42-32.5 2.51-67.75 0 0 21.49-6.88 70.4 26.24a242.65 242.65 0 0 1 128.18 0c48.87-33.13 70.33-26.24 70.33-26.24 14 35.25 5.18 61.27 2.55 67.75 16.41 17.9 26.31 40.75 26.31 68.69 0 98.35-59.85 120-116.88 126.32 9.19 7.9 17.38 23.53 17.38 47.41 0 34.22-.31 61.83-.31 70.23 0 6.85 4.61 14.81 17.6 12.31C438.72 464.97 512 369.08 512 256.02 512 114.62 397.37 0 256 0z" fill="currentColor" fill-rule="evenodd"></path>
+                </svg>
+              </a>
+            </li>
+          </ul>
+
+        </nav>
+
+        <div class="container" style="overflow-y:auto;position:relative;">
+
+          <p class="mt-3">
+            This is a web interface to <a href="https://github.com/built1n/rastercarve">RasterCarve</a>, a CNC engraving toolpath generator. Its toolpathing strategy uses many parallel lines of varying depth to convey brightness information of the input image. To begin, upload an image below. The defaults are safe values for MDF.
+          </p>
+
+          <form method="POST" class="needs-validation" novalidate id="main" action="javascript:void(0);" enctype="multipart/form-data">
+            <fieldset>
+              <legend>Input & Scaling</legend>
+              <div class="form-group">
+                <label for="image">
+                  Image to engrave:
+                </label>
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" id="image" name="image" aria-describedby="fileInput" required>
+                  <label class="custom-file-label" for="image">Choose an image...</label>
+                </div>
+                <small>Or <a href="#sample-container" data-toggle="collapse" id="load-samples">select a sample image</a>.</small>
+                <div class="collapse border rounded container bg-light" id="sample-container">
+                  <div id="sample-gallery">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;Loading...
+                    <!-- will be populated by JS -->
+                  </div>
+                  <small class="text-muted">All images are in the public domain.</small>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="size">Desired dimension:</label>
+                <div class="input-group mb-4">
+                  <input type="number" class="form-control" placeholder="Enter value..." min="1" step=".1" max="100" aria-label="Desired dimension" aria-describedby="basic-addon2" name="size" required>
+                  <div class="input-group-append">
+                    <span class="input-group-text nopad" id="basic-addon2">
+                      <select class="btn btn-mini" name="dimension">
+                        <option value="width" selected>Width (in)</option>
+                        <option value="height">Height (in)</option>
+                    </select></span>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Machine & Tool Options</legend>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="feed">Feed rate:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" min="1" value="100" aria-label="Feed rate" aria-describedby="basic-addon2" name="feed" required>
+                    <div class="input-group-append">
+                      <span class="input-group-text">in/min</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group col-md-6">
+                  <label for="plunge">Plunge rate:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" min="1" value="30" aria-label="Plunge rate" aria-describedby="basic-addon2" name="plunge" required>
+                    <div class="input-group-append">
+                      <span class="input-group-text">in/min</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="safez">Safe Z height:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" min=".01" step=".01" value=".1" aria-label="Safe Z height" aria-describedby="basic-addon2" name="safez" required>
+                    <div class="input-group-append">
+                      <span class="input-group-text">in</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="endz">Ending Z height (for final traverse):</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" min=".1" value="2" step=".1" aria-label="Ending Z height" aria-describedby="basic-addon2" name="endz" required>
+                    <div class="input-group-append">
+                      <span class="input-group-text">in</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="toolangle">V-bit included angle:</label>
+
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value="30" min="5" max="179" aria-label="Tool angle" aria-describedby="basic-addon2" name="toolangle" required>
+                    <div class="input-group-append">
+                      <span class="input-group-text">deg</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Engraving Options</legend>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="depth">Maximum engraving depth (in):</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value=".080" step=".001" min=".001" aria-label="Engraving depth" aria-describedby="basic-addon2" name="depth" required>
+                    <div class="input-group-append">
+                      <span class="input-group-text">in</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group col-md-6">
+                  <label for="lineangle">Line angle (above horizontal):</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value="22.5" min="0" max="89.9" step=".1" aria-label="Line angle" aria-describedby="basic-addon2" name="lineangle" required>
+                    <div class="input-group-append">
+                      <span class="input-group-text">deg</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="stepover">Stepover/line spacing:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" min="100" value="120" step="1" aria-label="Stepover" aria-describedby="basic-addon2" name="stepover" required>
+                    <div class="input-group-append">
+                      <span class="input-group-text">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group col-md-6">
+                  <label for="resolution">Linear resolution:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" class="form-control" value=".05" min="0.001" step=".001" aria-label="Resolution" aria-describedby="basic-addon2" name="resolution" required>
+                    <div class="input-group-append">
+                      <span class="input-group-text">in</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mb-4">
+                <input id="fakesubmit" type="submit" value="Submit" style="display:none;" />
+                <div class="col-lg-6">
+
+                  <div class="btn-group btn-block">
+                    <button class="btn btn-secondary btn-block" type="button" id="pbutton">
+                      <img id="img-icon"/>&nbsp;Preview
+                    </button>
+                    <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <div class="dropdown-menu">
+                      <a class="dropdown-item" href="#" id="download-preview">Download as SVG</a>
+                    </div>
+                  </div>
+
+                  <!--<button id="pbutton" class="btn btn-block btn-secondary" type="submit">Preview</button>-->
+                </div>
+                <div class="col-lg-6">
+                  <button id="gbutton" class="btn btn-block btn-primary" type="submit"><img id="download-icon"/>&nbsp;Download G-code</button>
+                </div>
+              </div>
+            </fieldset>
+          </form>
+          <center class="mb-2">
+            <small>
+              RasterCarve Live v__VERSION__ Copyright &copy; 2019-2020 <a href="mailto:me@fwei.tk">Franklin Wei</a>.
+              <br>
+              This software is distributed on an "AS IS" basis, <em>without warranty of any kind</em>, either express or implied.
+              <br>
+              <a class="collapsed" href="#privacy-policy" data-toggle="collapse">Privacy</a>
+              <div id="privacy-policy" class="collapse">
+                This application logs metadata, including visitor IP addresses, for internal statistics and optimization only. Input images and output files (including G-code and preview images) are cached by the server for performance reasons; these are never shared and are automatically erased 15 minutes after their initial upload. Visitor data is encrypted in transit with TLS and is never disclosed to a third party.
+              </div>
+            </small>
+          </center>
+        </div>
+      </div>
+      <div class="split bg-light" id="two">
+        <div id="preview">
+          <table class="box">
+            <tr>
+              <td align="center">
+                <span class="text-muted placeholder" id="placeholder"><b>Preview will appear here.</b></span>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!--<script src="/js/svg-pan-zoom.min.js"></script>-->
+    <script src="bundle.js"></script>
+  </body>
+</html>

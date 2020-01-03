@@ -8,6 +8,23 @@
 // This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 // KIND, either express or implied.
 
+import 'core-js/features/promise';
+
+import $ from 'jquery';
+import 'jquery-form';
+
+import svgPanZoom from 'svg-pan-zoom';
+import 'bootstrap';
+import Split from 'split.js';
+import Q from 'q';
+import SparkMD5 from 'spark-md5';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+import dl_icon from './download-icon.svg';
+import img_icon from './image-icon.svg';
+
+import './styles.css'; // last to override bootstrap
+
 function getData() {
     var e = document.getElementById('main');
     var formData = new FormData(e);
@@ -132,19 +149,16 @@ function showPreview(xhr) {
                    fit: 1,
                    center: 1,
                    beforePan: function(oldPan, newPan){
-                       var stopHorizontal = false
-                       , stopVertical = false
-                       , gutterWidth = 100
-                       , gutterHeight = 100
+                       var stopHorizontal = false, stopVertical = false, gutterWidth = 100, gutterHeight = 100;
                        // Computed variables
-                       , sizes = this.getSizes()
-                       , leftLimit = -((sizes.viewBox.x + sizes.viewBox.width) * sizes.realZoom) + gutterWidth
-                       , rightLimit = sizes.width - gutterWidth - (sizes.viewBox.x * sizes.realZoom)
-                       , topLimit = -((sizes.viewBox.y + sizes.viewBox.height) * sizes.realZoom) + gutterHeight
-                       , bottomLimit = sizes.height - gutterHeight - (sizes.viewBox.y * sizes.realZoom)
-                       customPan = {}
-                       customPan.x = Math.max(leftLimit, Math.min(rightLimit, newPan.x))
-                       customPan.y = Math.max(topLimit, Math.min(bottomLimit, newPan.y))
+                       var sizes = this.getSizes(),
+                           leftLimit = -((sizes.viewBox.x + sizes.viewBox.width) * sizes.realZoom) + gutterWidth,
+                           rightLimit = sizes.width - gutterWidth - (sizes.viewBox.x * sizes.realZoom),
+                           topLimit = -((sizes.viewBox.y + sizes.viewBox.height) * sizes.realZoom) + gutterHeight,
+                           bottomLimit = sizes.height - gutterHeight - (sizes.viewBox.y * sizes.realZoom);
+                       var customPan = {};
+                       customPan.x = Math.max(leftLimit, Math.min(rightLimit, newPan.x));
+                       customPan.y = Math.max(topLimit, Math.min(bottomLimit, newPan.y));
                        return customPan
                    },
                    zoomScaleSensitivity: 0.35,
@@ -153,7 +167,14 @@ function showPreview(xhr) {
 }
 
 function downloadFile(data, filename) {
+    // MS IE shim
     var blob = new Blob([data]);
+
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(blob, filename);
+        return;
+    }
+
     var link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
     link.download = filename;
@@ -365,6 +386,11 @@ function init() {
         cursample = -1; // reset here, not in setFilename, since
         // useSample calls that.
     });
+
+    // render icons
+    console.log(dl_icon);
+    $('#download-icon')[0].src = dl_icon;
+    $('#img-icon')[0].src = img_icon;
 
     // prefilled by browser?
     if(hasFile())
