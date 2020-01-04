@@ -388,7 +388,6 @@ function init() {
     });
 
     // render icons
-    console.log(dl_icon);
     $('#download-icon')[0].src = dl_icon;
     $('#img-icon')[0].src = img_icon;
 
@@ -397,9 +396,11 @@ function init() {
         setFilename(getFilename());
 
     Split(['#one', '#two'], {
-        sizes: [50, 50],
-        minSize: [300, 200],
+        sizes: [75, 25],
+        minSize: 0,
+        snapOffset: 100,
         cursor: 'col-resize',
+        gutterSize: 8,
     });
 
     $('#load-samples').click(loadSamples);
