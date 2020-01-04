@@ -20,7 +20,8 @@ app.use(morgan('combined'));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(expressStaticGzip('dist', {
-    enableBrotli: true
+    enableBrotli: true,
+    serverPrefrence: [ 'br' ]
 }))
 
 const minute = 60 * 1000; // ms for setinterval
