@@ -248,7 +248,7 @@ function preview(button, download) {
                             showPreview(xhr);
                         console.log("Precache miss :(");
                     },
-                    error: (err) => alert(err),
+                    error: (err) => warn(button, "Network error. Try refreshing the page."),
                     complete: () => {
                         $(button).prop("disabled", false);
                         $(button).html(oldHtml);
@@ -306,7 +306,7 @@ function gcode() {
                         downloadFile(data, getFilename() + '.nc');
                         console.log("Precache miss :(");
                     },
-                    error: (err) => alert(err),
+                    error: (err) => warn($('#gbutton'), "Network error. Try refreshing the page."),
                     complete: () => {
                         $(this).prop("disabled", false);
                         $(this).html(oldHtml);
