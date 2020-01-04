@@ -36,6 +36,8 @@ var filehash = null;
 
 var samples = null; // loaded from samples.json, set by init()
 var cursample = -1; // -1 for none
+var split_inst = null;
+const split_default = [ 75, 25 ];
 
 function hasFile() {
     return document.getElementById('image').files.length == 1;
@@ -137,6 +139,12 @@ function precacheData(hash) {
 }
 
 function showPreview(xhr) {
+    // uncollapse side pane
+    console.log(split_inst.getSizes());
+    if(split_inst.getSizes()[1] < 2.0) { // it's a float percentage
+        split_inst.setSizes(split_default);
+    }
+
     $('#preview').html(xhr.responseText);
     $('#preview').children().attr("id", "preview-image");
     $('#preview-image').css('height', '100%');
@@ -395,8 +403,8 @@ function init() {
     if(hasFile())
         setFilename(getFilename());
 
-    Split(['#one', '#two'], {
-        sizes: [75, 25],
+    split_inst = Split(['#one', '#two'], {
+        sizes: split_default,
         minSize: 0,
         snapOffset: 100,
         cursor: 'col-resize',
