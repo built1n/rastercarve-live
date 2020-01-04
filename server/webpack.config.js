@@ -58,9 +58,10 @@ module.exports = {
                     {
                         loader: 'string-replace-loader',
                         options: {
-                            search: '__VERSION__',
-                            replace: package.version,
-                            flags: 'g'
+                            multiple: [
+                                { search: '__VERSION__', replace: package.version, flags: 'g' },
+                                { search: '__DATE__',    replace: new Date().toDateString(), flags: 'g' }
+                            ]
                         }
                     },
                 ]
