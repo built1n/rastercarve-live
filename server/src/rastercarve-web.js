@@ -436,6 +436,9 @@ function init() {
 
     // show everything
     $('body')[0].style.visibility = "visible";
+
+    if(window.location.hash == "#samples")
+        $('#load-samples').click(); // start with samples open
 }
 
 $(document).ready(init);
