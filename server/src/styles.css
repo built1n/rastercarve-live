@@ -104,3 +104,7 @@ svg {
     overflow-x: auto;
     white-space: nowrap;
 }
+
+.fullheight {
+    height: 100%;
+}

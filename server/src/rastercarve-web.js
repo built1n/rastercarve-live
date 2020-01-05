@@ -433,12 +433,9 @@ function init() {
             form.classList.add('was-validated');
         }, false);
     });
+
+    // show everything
+    $('body')[0].style.visibility = "visible";
 }
 
 $(document).ready(init);
-
-(function() {
-    'use strict';
-    window.addEventListener('load', function() {
-    }, false);
-})();
