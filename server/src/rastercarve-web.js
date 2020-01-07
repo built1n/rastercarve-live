@@ -25,12 +25,6 @@ import img_icon from './image-icon.svg';
 
 import './styles.css'; // last to override bootstrap
 
-function getData() {
-    var e = document.getElementById('main');
-    var formData = new FormData(e);
-    return formData;
-}
-
 // choose a sample image by its hash
 var filehash = null;
 
@@ -38,6 +32,12 @@ var samples = null; // loaded from samples.json, set by init()
 var cursample = -1; // -1 for none
 var split_inst = null;
 const split_default = [ 75, 25 ];
+
+function getData() {
+    var e = document.getElementById('main');
+    var formData = new FormData(e);
+    return formData;
+}
 
 function hasFile() {
     return document.getElementById('image').files.length == 1;
@@ -175,9 +175,9 @@ function showPreview(xhr) {
 }
 
 function downloadFile(data, filename) {
-    // MS IE shim
     var blob = new Blob([data]);
 
+    // MS IE shim
     if (window.navigator && window.navigator.msSaveOrOpenBlob) {
         window.navigator.msSaveOrOpenBlob(blob, filename);
         return;
@@ -338,19 +338,89 @@ function getSampleByIndex(idx) {
     return $($(sample_links[cursample])[0].children[0]); // hack
 }
 
+var img_url = null;
+var img_size = null;
+
+// populate the output stats table
+function displayDims() {
+    var sizeInput = $('input[name="size"]')[0];
+    console.log(sizeInput);
+
+    if(!img_size || !sizeInput.validity.valid)
+        return; // no can do
+
+    var dim = $('select[name="dimension"]').value; // "width" or "height"
+    var output_size = (dim === "width") ?
+        {
+            width: parseFloat(sizeInput.value),
+            height: sizeInput.value * (img_size.height / img_size.width)
+        } : {
+            height: parseFloat(sizeInput.value),
+            width: sizeInput.value * (img_size.width / img_size.height)
+        };
+    var output_area = output_size.width * output_size.height;
+
+    const inch_unit = " in";
+    const inch_sq = " in<sup>2</sup>";
+
+    $('#out-width').html(output_size.width.toFixed(2) + inch_unit);
+    $('#out-height').html(output_size.height.toFixed(2) + inch_unit);
+    $('#out-area').html(output_area.toFixed(2) + inch_sq);
+    $('#image-info').collapse('show');
+}
+
+    // get the dimensions of the selected image for future use
+    // url can be a blob or remote
+function setSelectedImage(url) {
+    img_url = url;
+    var img = new Image();
+
+    img.onload = function() {
+        $('#image-preview').html(this);
+
+        img_size = {
+            width:  this.width,
+            height: this.height
+        };
+        URL.revokeObjectURL(this.src);
+
+        console.log('onload: sizes', img_size);
+        console.log('onload: this', this);
+
+        displayDims();
+    }
+
+    img.classList.add("img-fluid", "img-thumbnail");
+    img.src = url;
+}
+
+function useFile(e) {
+    var file = e.target.files[0];
+    var filename = file.name;
+    setFilename(filename);
+    cursample = -1; // reset here, not in setFilename, since
+    // useSample calls that.
+
+    setSelectedImage(URL.createObjectURL(file));
+}
+
 function useSample(event) {
     console.log(event);
     var idx = $(event.currentTarget).data('index');
     console.log(idx);
 
+    // unset blue border
     if(cursample >= 0)
         getSampleByIndex(cursample).removeClass('border-primary');
 
     cursample = idx;
     getSampleByIndex(idx).addClass('border-primary');
 
-    setFilename(basename(samples[idx].filename));
+    setFilename(basename(samples[idx].thumbnail));
     filehash = samples[idx].hash;
+
+    // show the image
+    setSelectedImage(samples[idx].large);
 
     // disable verification on the file input for now (will revert
     // back whenever a new file is selected)
@@ -362,7 +432,7 @@ function loadSamples() {
         return; // already loaded
 
     // populate sample gallery
-    $.getJSON("/samples.json")
+    $.getJSON("/samples/index.json")
         .done((data) =>
               {
                   samples = data.samples;
@@ -377,10 +447,10 @@ function loadSamples() {
                                  })
                                .html($('<img/>',
                                        {
-                                           src: samples[i].filename,
+                                           src: samples[i].thumbnail,
                                            class: "img-thumbnail"
                                        }))
-                               .prop('title', basename(samples[i].filename))
+                               .prop('title', basename(samples[i].thumbnail))
                                .click(useSample)
                                .data('index', i));
               })
@@ -388,12 +458,9 @@ function loadSamples() {
 }
 
 function init() {
-    $('input[type="file"]').change(function(e){
-        var filename = e.target.files[0].name;
-        setFilename(filename);
-        cursample = -1; // reset here, not in setFilename, since
-        // useSample calls that.
-    });
+    $('input[type="file"]').change(useFile);
+    $('input[name="size"]').change(displayDims);
+    $('input[name="dimension"]').change(displayDims);
 
     // render icons
     $('#download-icon')[0].src = dl_icon;

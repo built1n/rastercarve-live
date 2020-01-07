@@ -11,7 +11,8 @@ then
     exit 1
 fi
 
-mkdir -p $BASEDIR/dist/sample-thumbnails
+mkdir -p $BASEDIR/dist/samples/thumbnail
+mkdir -p $BASEDIR/dist/samples/large
 mkdir -p $BASEDIR/samples-hashed
 
 echo '{'
@@ -21,8 +22,12 @@ first=1
 
 for f in $BASEDIR/samples/*
 do
-    THUMBNAIL=$BASEDIR/dist/sample-thumbnails/$(basename "$f")
-    convert "$f" -thumbnail 300x128 -quality 95% -strip -sampling-factor 4:2:0 "$THUMBNAIL"
+    THUMBNAIL=$BASEDIR/dist/samples/thumbnail/$(basename "$f")
+    LARGESIZE=$BASEDIR/dist/samples/large/$(basename "$f")
+
+    convert "$f" -thumbnail 300x128 -quality 85% -strip -sampling-factor 4:2:0 "$THUMBNAIL"
+    convert "$f" -thumbnail 1024x512 -quality 100% -strip "$LARGESIZE"
+
     HASH=$(md5sum "$f" | awk '{print $1}')
     cp "$f" $BASEDIR/samples-hashed/$HASH
     if [ $first -eq "1" ]
@@ -32,7 +37,8 @@ do
         echo ','
     fi
     echo '{'
-    echo "\"filename\": \"/sample-thumbnails/$(basename $f)\","
+    echo "\"thumbnail\": \"/samples/thumbnail/$(basename $f)\","
+    echo "\"large\": \"/samples/large/$(basename $f)\","
     echo "\"hash\": \"$HASH\""
     echo '}'
 done

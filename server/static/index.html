@@ -67,7 +67,7 @@
 
               <div class="form-group">
                 <label for="size">Desired dimension:</label>
-                <div class="input-group mb-4">
+                <div class="input-group">
                   <input type="number" class="form-control" placeholder="Enter value..." min="1" step=".1" max="100" aria-label="Desired dimension" aria-describedby="basic-addon2" name="size" required>
                   <div class="input-group-append">
                     <span class="input-group-text nopad" id="basic-addon2">
@@ -79,6 +79,21 @@
                 </div>
               </div>
             </fieldset>
+
+            <div id="image-info" class="collapse mb-4">
+              <h4>Output Summary</h4>
+
+              <p>Selected image:</p>
+              <div id="image-preview"></div>
+              <table class="table mt-3">
+                <thead>
+                  <tr><td>Width</td><td>Height</td><td>Area</td></tr>
+                </thead>
+                <tbody>
+                  <tr><td id="out-width"/><td id="out-height"/><td id="out-area"/></tr>
+                </tbody>
+              </table>
+            </div>
 
             <fieldset>
               <legend>Machine & Tool Options</legend>

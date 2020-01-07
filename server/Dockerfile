@@ -27,17 +27,13 @@ COPY package.json package-lock.json /app/
 
 RUN yarn install --verbose
 
-COPY src /app/src
 COPY util /app/util
 COPY samples /app/samples
 COPY static /app/static
+COPY src /app/src
 
-COPY *.config.js /app/
+COPY *.config.js index.js /app/
 
-COPY index.js /app/
-
-RUN npm run build
-
-RUN /app/util/index-samples.sh /app > /app/dist/samples.json
+RUN npm run build && mkdir -p /app/dist/samples && /app/util/index-samples.sh /app > /app/dist/samples/index.json
 
 CMD cd /app && npm start
