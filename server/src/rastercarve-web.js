@@ -349,8 +349,10 @@ function displayDims() {
     if(!img_size || !sizeInput.validity.valid)
         return; // no can do
 
-    var dim = $('select[name="dimension"]').value; // "width" or "height"
-    var output_size = (dim === "width") ?
+    var dim = $('select[name="dimension"]')[0].value; // "width" or "height"
+    console.log(dim);
+    console.log($('select'));
+    var output_size = (dim == "width") ?
         {
             width: parseFloat(sizeInput.value),
             height: sizeInput.value * (img_size.height / img_size.width)
@@ -358,6 +360,10 @@ function displayDims() {
             height: parseFloat(sizeInput.value),
             width: sizeInput.value * (img_size.width / img_size.height)
         };
+
+    console.log(dim, dim == "width");
+    console.log(output_size);
+
     var output_area = output_size.width * output_size.height;
 
     const inch_unit = " in";
@@ -460,7 +466,7 @@ function loadSamples() {
 function init() {
     $('input[type="file"]').change(useFile);
     $('input[name="size"]').change(displayDims);
-    $('input[name="dimension"]').change(displayDims);
+    $('select[name="dimension"]').change(displayDims);
 
     // render icons
     $('#download-icon')[0].src = dl_icon;
