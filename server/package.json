@@ -1,6 +1,6 @@
 {
     "name": "rastercarve-live",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "description": "Web interface to rastercarve",
     "main": "index.js",
     "scripts": {
@@ -26,6 +26,7 @@
         "@babel/preset-env": "^7.7.7",
         "body-parser": "^1.19.0",
         "bootstrap": "^4.4.1",
+        "caman": "^4.1.2",
         "child_process": "^1.0.2",
         "compression": "^1.7.4",
         "copy-webpack-plugin": "^5.1.1",
