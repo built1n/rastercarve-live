@@ -23,7 +23,7 @@
   <body class="fullheight" style="visibility: hidden">
     <div class="fullheight">
       <div class="split" id="one">
-        <nav class="navbar navbar-light bg-primary text-white">
+        <nav class="navbar navbar-light bg-primary text-white shadow-sm">
           <a class="navbar-brand text-white" href="#">
             <b>RasterCarve Live</b> <span>v__VERSION__</span>
           </a>
@@ -230,21 +230,24 @@
             </small>
           </center>
         </div>
-        <footer class="d-flex text-light text-small blue">
-          <div class="container">
+        <footer class="d-flex text-light text-small bg-dark">
+          <div class="container mt-4">
             <small>
               <div class="text-center">
-                This software is distributed on an "AS IS" basis, <em>without warranty of any kind</em>, either express or implied. Machining times are estimates only and may vary widely between configurations.<br>
-                <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=C9QCXZA7J2KLG">Donate</a>
 
-                <a class="collapsed" href="#privacy-policy" data-toggle="collapse">Privacy</a>
-                <div id="privacy-policy" class="collapse">
-                  This application logs metadata, including visitor IP addresses, for internal statistics and optimization only. Input images and output files (including G-code and preview images) are cached by the server for performance reasons; these are never shared and are automatically erased 15 minutes after their initial upload. Visitor data is encrypted in transit with TLS and is never disclosed to a third party.
+                <div class="mb-3">
+                  RasterCarve Live <a href="https://github.com/built1n/rastercarve-live/releases/tag/v__VERSION__">v__VERSION__</a> &copy; 2019-2020 <a href="https://fwei.tk">Franklin Wei</a> | <a href="#disclaimer" data-toggle="collapse">Disclaimer</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=C9QCXZA7J2KLG">Donate</a> | <a class="collapsed" href="#privacy-policy" data-toggle="collapse">Privacy</a>
+                </div>
+                <div id="disclaimer" class="collapse mb-3">
+                  This software is distributed on an &ldquo;AS IS&rdquo; basis, <em>without warranty of any kind</em>, either express or implied. Machining times are estimates only and may vary widely between machine configurations.
+                </div>
+                <div id="privacy-policy" class="collapse mb-3">
+                  This application logs metadata, including visitor IP addresses, for internal statistics and optimization only. Input images and output files (including G-code and preview images) are cached by the server for performance reasons; these are never shared and are automatically erased 15 minutes after their initial upload. All visitor data is encrypted in transit with TLS.
                 </div>
                 Backend: <a href="https://pypi.org/project/rastercarve/__BACKENDVER__/">v__BACKENDVER__</a>. Last updated: __DATE__.<br>
 
                 <div class="footer-copyright py-3">
-                  RasterCarve Live v__VERSION__ &copy; 2019-2020 <a href="https://fwei.tk">Franklin Wei</a>.
+
                 </div>
               </div>
             </small>
@@ -264,6 +267,5 @@
       </div>
     </div>
     <script src="bundle.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/camanjs/4.0.0/caman.min.js"></script>
   </body>
 </html>

@@ -182,6 +182,7 @@ function showPreview(xhr, formData) {
             $('#preview').append($('<div/>')
                                  .addClass('bottomleft')
                                  .addClass('translucent')
+                                 .addClass('small')
                                  .addClass('p-1')
                                  .append(createStatsTable(data))
                                 );
@@ -532,7 +533,7 @@ function init() {
     $('#download-preview').click(() => preview($('#pbutton'), true));
     $("#gbutton").click(gcode);
     $(document).on('shown.bs.collapse', function(event){
-        if(event.target.id === "privacy-policy")
+        if(event.target.id === "privacy-policy" || event.target.id == "disclaimer")
             event.target.scrollIntoView({ behavior: 'smooth' });
     });
 
