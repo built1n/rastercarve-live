@@ -154,6 +154,9 @@ function createStatsTable(data) {
 }
 
 function showPreview(xhr, formData) {
+    console.log("showpreview")
+    console.log(xhr);
+
     // uncollapse side pane
     console.log(split_inst.getSizes());
     if(split_inst.getSizes()[1] < 2.0) { // it's a float percentage
