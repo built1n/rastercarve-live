@@ -149,7 +149,8 @@ function precacheData(hash) {
 
 function createStatsTable(data) {
     var ret = "";
-    ret += (data.pathtime / 60).toFixed(1) + " minutes, " + data.nlines + " lines (" + data.line_width.toFixed(3) + "\" wide)";
+    const fudge = 1.478; // empirical
+    ret += (fudge * data.pathtime / 60).toFixed(1) + " minutes, " + data.nlines + " lines (" + data.line_width.toFixed(3) + "\" wide)";
     return ret;
 }
 
