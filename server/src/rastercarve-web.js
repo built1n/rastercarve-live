@@ -147,16 +147,9 @@ function precacheData(hash) {
     return formData;
 }
 
-function toHMS(seconds) {
-    var date = new Date(null);
-    date.setSeconds(seconds);
-    var timeString = date.toISOString().substr(11, 8);
-    return timeString;
-}
-
 function createStatsTable(data) {
     var ret = "";
-    ret += toHMS(data.pathtime) + ", " + data.nlines + " lines (" + data.line_width.toFixed(3) + "\" wide)";
+    ret += (data.pathtime / 60).toFixed(1) + " minutes, " + data.nlines + " lines (" + data.line_width.toFixed(3) + "\" wide)";
     return ret;
 }
 

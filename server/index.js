@@ -173,8 +173,10 @@ function gcode(req, res) {
 
         exec(cmd, (err, stdout, stderr) =>
              {
-                 if(err) throw err;
-                 res.download(ncname);
+                 if(err)
+                     send500(res, err);
+                 else
+                     res.download(ncname);
              });
     } catch(err) {
         send500(res, err);
@@ -233,8 +235,10 @@ function gcode_precache(req, res) {
 
             exec(cmd, (err, stdout, stderr) =>
                  {
-                     if(err) throw err;
-                     res.download(ncname);
+                     if(err)
+                         send500(res, err);
+                     else
+                         res.download(ncname);
                  });
         });
     } catch(err) {
@@ -306,8 +310,10 @@ function preview(req, res) {
 
         exec(cmd, (err, stdout, stderr) =>
              {
-                 if(err) throw err;
-                 res.sendFile(svgname);
+                 if(err)
+                     send500(res, err);
+                 else
+                     res.sendFile(svgname);
              });
     } catch(err) {
         send500(res, err);
@@ -375,8 +381,10 @@ function preview_precache(req, res) {
 
             exec(cmd, (err, stdout, stderr) =>
                  {
-                     if(err) throw err;
-                     res.sendFile(svgname);
+                     if(err)
+                         send500(res, err);
+                     else
+                         res.sendFile(svgname);
                  });
         });
     } catch(err) {
