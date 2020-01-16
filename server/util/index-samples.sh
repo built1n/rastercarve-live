@@ -26,7 +26,7 @@ do
     LARGESIZE=$BASEDIR/dist/samples/large/$(basename "$f")
 
     convert "$f" -thumbnail 300x128 -quality 85% -strip -sampling-factor 4:2:0 "$THUMBNAIL"
-    convert "$f" -thumbnail 1024x512 -quality 100% -strip "$LARGESIZE"
+    convert "$f" -thumbnail 1024x768 -quality 100% -strip "$LARGESIZE"
 
     HASH=$(md5sum "$f" | awk '{print $1}')
     cp "$f" $BASEDIR/samples-hashed/$HASH

@@ -34,6 +34,7 @@ COPY src /app/src
 
 COPY *.config.js index.js /app/
 
-RUN npm run build && mkdir -p /app/dist/samples && /app/util/index-samples.sh /app > /app/dist/samples/index.json
+# substitute first
+RUN /app/util/subst-backend.sh /app && npm run build && mkdir -p /app/dist/samples && /app/util/index-samples.sh /app > /app/dist/samples/index.json
 
 CMD cd /app && npm start

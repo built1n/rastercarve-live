@@ -18,6 +18,7 @@ import 'bootstrap';
 import Split from 'split.js';
 import Q from 'q';
 import SparkMD5 from 'spark-md5';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import dl_icon from './download-icon.svg';
@@ -32,6 +33,14 @@ var samples = null; // loaded from samples.json, set by init()
 var cursample = -1; // -1 for none
 var split_inst = null;
 const split_default = [ 75, 25 ];
+
+const endpoints = {
+    preview: '/api/preview',
+    preview_precache: '/api/preview/precache',
+    gcode: '/api/gcode',
+    gcode_precache: '/api/gcode/precache',
+    info: '/api/info/precache'
+};
 
 function getData() {
     var e = document.getElementById('main');
@@ -138,7 +147,20 @@ function precacheData(hash) {
     return formData;
 }
 
-function showPreview(xhr) {
+function toHMS(seconds) {
+    var date = new Date(null);
+    date.setSeconds(seconds);
+    var timeString = date.toISOString().substr(11, 8);
+    return timeString;
+}
+
+function createStatsTable(data) {
+    var ret = "";
+    ret += toHMS(data.pathtime) + ", " + data.nlines + " lines (" + data.line_width.toFixed(3) + "\" wide)";
+    return ret;
+}
+
+function showPreview(xhr, formData) {
     // uncollapse side pane
     console.log(split_inst.getSizes());
     if(split_inst.getSizes()[1] < 2.0) { // it's a float percentage
@@ -147,6 +169,27 @@ function showPreview(xhr) {
 
     $('#preview').html(xhr.responseText);
     $('#preview').children().attr("id", "preview-image");
+
+    // output stats in bottom pane
+    $.post({
+        url: endpoints.info,
+        data: formData,
+        success: (data, status, xhr) => {
+            console.log("info retrieved successfully");
+            console.log(data);
+            console.log(xhr);
+
+            $('#preview').append($('<div/>')
+                                 .addClass('bottomleft')
+                                 .addClass('translucent')
+                                 .addClass('p-1')
+                                 .append(createStatsTable(data))
+                                );
+        }
+    }).fail((err) => {
+        console.log(err);
+    });
+
     $('#preview-image').css('height', '100%');
     $('#preview-image').css('width', '100%');
 
@@ -231,13 +274,13 @@ function preview(button, download) {
         var formData = precacheData(hash);
 
         $.post({
-            url: '/api/preview/precache',
+            url: endpoints.preview_precache,
             data: formData,
             success: (data, status, xhr) => {
                 if(download)
                     downloadFile(xhr.responseText, getFilename() + '.svg');
                 else
-                    showPreview(xhr);
+                    showPreview(xhr, formData);
                 console.log("Precache hit!");
                 $(button).prop("disabled", false);
                 $(button).html(oldHtml);
@@ -245,7 +288,7 @@ function preview(button, download) {
             error: () => {
                 // not cached
                 $.post({
-                    url: '/api/preview',
+                    url: endpoints.preview,
                     data: getData(),
                     processData: false, // necessary here since it's a FormData object
                     contentType: false,
@@ -253,7 +296,7 @@ function preview(button, download) {
                         if(download)
                             downloadFile(xhr.responseText, getFilename() + '.svg');
                         else
-                            showPreview(xhr);
+                            showPreview(xhr, formData);
                         console.log("Precache miss :(");
                     },
                     error: (err) => warn(button, "Network error. Try refreshing the page."),
@@ -296,7 +339,7 @@ function gcode() {
         var formData = precacheData(hash);
 
         $.post({
-            url: '/api/gcode/precache',
+            url: endpoints.gcode_precache,
             data: formData,
             success: (data, status, xhr) => {
                 downloadFile(data, getFilename() + '.nc');
@@ -306,7 +349,7 @@ function gcode() {
             },
             error: () => {
                 $.post({
-                    url: '/api/gcode',
+                    url: endpoints.gcode,
                     data: getData(),
                     processData: false, // necessary here but not above
                     contentType: false,
@@ -375,12 +418,13 @@ function displayDims() {
     $('#image-info').collapse('show');
 }
 
-    // get the dimensions of the selected image for future use
-    // url can be a blob or remote
+// get the dimensions of the selected image for future use
+// url can be a blob or remote
 function setSelectedImage(url) {
     img_url = url;
     var img = new Image();
 
+    // show preview of uploaded image
     img.onload = function() {
         $('#image-preview').html(this);
 
@@ -388,14 +432,13 @@ function setSelectedImage(url) {
             width:  this.width,
             height: this.height
         };
-        URL.revokeObjectURL(this.src);
 
-        console.log('onload: sizes', img_size);
-        console.log('onload: this', this);
+        console.log($("#uploaded-image"));
 
         displayDims();
     }
 
+    img.id = "uploaded-image";
     img.classList.add("img-fluid", "img-thumbnail");
     img.src = url;
 }

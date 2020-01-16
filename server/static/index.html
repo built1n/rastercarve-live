@@ -39,10 +39,10 @@
 
         </nav>
 
-        <div class="container">
+        <div class="container shadow">
 
           <p class="mt-3">
-            This is a web interface to <a href="https://github.com/built1n/rastercarve">RasterCarve</a>, a CNC engraving toolpath generator. Its toolpathing strategy uses many parallel lines of varying depth to convey brightness information of the input image. To begin, upload an image below. The defaults are safe values for MDF.
+            This is a web interface to <a href="https://github.com/built1n/rastercarve">RasterCarve</a>, a CNC engraving toolpath generator. Its toolpathing strategy uses many parallel lines of varying depth to convey brightness information of the input image. To begin, upload an image below. The defaults are reasonable values for MDF.
           </p>
 
           <form method="POST" class="needs-validation" novalidate id="main" action="javascript:void(0);" enctype="multipart/form-data">
@@ -223,25 +223,33 @@
               </div>
             </fieldset>
           </form>
+
           <center class="mb-2">
             <small>
-              Last updated: __DATE__.<br>
-              RasterCarve Live v__VERSION__ &copy; 2019-2020 <a href="https://fwei.tk">Franklin Wei</a>.<br>
-              This software is distributed on an "AS IS" basis, <em>without warranty of any kind</em>, either express or implied.<br>
-              <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-                <input type="hidden" name="cmd" value="_s-xclick" />
-                <input type="hidden" name="hosted_button_id" value="C9QCXZA7J2KLG" />
-                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-                <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
-              </form>
 
-              <a class="collapsed" href="#privacy-policy" data-toggle="collapse">Privacy</a>
-              <div id="privacy-policy" class="collapse">
-                This application logs metadata, including visitor IP addresses, for internal statistics and optimization only. Input images and output files (including G-code and preview images) are cached by the server for performance reasons; these are never shared and are automatically erased 15 minutes after their initial upload. Visitor data is encrypted in transit with TLS and is never disclosed to a third party.
-              </div>
             </small>
           </center>
         </div>
+        <footer class="d-flex text-light text-small blue">
+          <div class="container">
+            <small>
+              <div class="text-center">
+                This software is distributed on an "AS IS" basis, <em>without warranty of any kind</em>, either express or implied. Machining times are estimates only and may vary widely between configurations.<br>
+                <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=C9QCXZA7J2KLG">Donate</a>
+
+                <a class="collapsed" href="#privacy-policy" data-toggle="collapse">Privacy</a>
+                <div id="privacy-policy" class="collapse">
+                  This application logs metadata, including visitor IP addresses, for internal statistics and optimization only. Input images and output files (including G-code and preview images) are cached by the server for performance reasons; these are never shared and are automatically erased 15 minutes after their initial upload. Visitor data is encrypted in transit with TLS and is never disclosed to a third party.
+                </div>
+                Backend: <a href="https://pypi.org/project/rastercarve/__BACKENDVER__/">v__BACKENDVER__</a>. Last updated: __DATE__.<br>
+
+                <div class="footer-copyright py-3">
+                  RasterCarve Live v__VERSION__ &copy; 2019-2020 <a href="https://fwei.tk">Franklin Wei</a>.
+                </div>
+              </div>
+            </small>
+          </div>
+        </footer>
       </div>
       <div class="split bg-light" id="two">
         <div id="preview">
@@ -256,5 +264,6 @@
       </div>
     </div>
     <script src="bundle.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/camanjs/4.0.0/caman.min.js"></script>
   </body>
 </html>

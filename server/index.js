@@ -30,10 +30,18 @@ const cache_lifetime = 15 * minute;
 
 const port = 8080;
 
+const endpoints = {
+    preview: '/api/preview',
+    preview_precache: '/api/preview/precache',
+    gcode: '/api/gcode',
+    gcode_precache: '/api/gcode/precache',
+    info: '/api/info/precache'
+};
+
 // temp directory to cache input and output (NC and SVG)
 const OUTDIR="/app/output/";
 
-// location of hashed sample files
+// location of hashed sample files (stored separately to avoid deletion)
 const SAMPLEDIR="/app/samples-hashed/";
 
 // try not to take forever
@@ -105,9 +113,11 @@ function hashall(imagefile, body) {
     hashfile(imagefile)
 }
 
-function send500(res) { res.status(500).send('internal server error'); }
+function send500(res, err) { res.status(500).send(err); }
 
-function buildcmd(body, image) {
+function buildcmd(body, image, jsonout) {
+    console.log("jsonout - buildcmd: " + jsonout);
+
     var cmd = 'rastercarve -q ';
     if(body.dimension == 'width')
         cmd += '--width ';
@@ -125,6 +135,8 @@ function buildcmd(body, image) {
     cmd += ' -s ' + body.stepover;
     cmd += ' -r ' + body.resolution;
 
+    cmd += ' --json ' + jsonout;
+
     return cmd;
 }
 
@@ -141,32 +153,35 @@ function gcode(req, res) {
 
         // first check cache (key uniquely identifies output g-code)
         var file = req.files.image;
-        var outname = OUTDIR + hashstring(file.md5 + hashbody(req.body)) + '.nc';
+        var basename = OUTDIR + hashstring(file.md5 + hashbody(req.body));
 
-        if(fs.existsSync(outname))
+        // we know the image is not in cache (the client already tried
+        // /precache)
+        var ncname =   basename + '.nc';
+
+        if(fs.existsSync(ncname))
         {
             console.log("Cache hit!");
-            return res.download(outname); // hit!
+            return res.download(ncname); // hit!
         }
 
-        var tmpname = OUTDIR + file.md5;
-        file.mv(tmpname);
+        var jsonname = basename + '.json';
+        var imgname = OUTDIR + file.md5;
+        file.mv(imgname);
 
-        var cmd = buildcmd(req.body, tmpname) + ' > ' + outname;
+        var cmd = buildcmd(req.body, imgname, jsonname) + ' > ' + ncname;
 
         exec(cmd, (err, stdout, stderr) =>
              {
-                 if(err)
-                     throw err;
-                 res.download(outname);
+                 if(err) throw err;
+                 res.download(ncname);
              });
     } catch(err) {
-        //throw err;
-        res.status(500).send(err);
+        send500(res, err);
     }
 }
 
-function gcode_precached(req, res) {
+function gcode_precache(req, res) {
     console.log("G-code Precache request");
     console.log(req.body);
 
@@ -202,26 +217,28 @@ function gcode_precached(req, res) {
 
             // check output cache
             var basename = OUTDIR + hashstring(filehash + hashbody(req.body));
-            var outname = basename + '.nc';
+            var ncname = basename + '.nc';
 
-            if(fs.existsSync(outname))
+            if(fs.existsSync(ncname))
             {
                 console.log("Cache hit!");
-                return res.download(outname); // hit!
+                return res.download(ncname); // direct hit!
             }
 
-            var cmd = buildcmd(req.body, imgname) + ' > ' + outname;
+            var jsonname = basename + '.json';
+
+            // image exists in cache, but G-code does not -- just do
+            // G-code
+            var cmd = buildcmd(req.body, imgname, jsonname) + ' > ' + ncname;
 
             exec(cmd, (err, stdout, stderr) =>
                  {
-                     if(err)
-                         throw err;
-                     res.download(outname);
+                     if(err) throw err;
+                     res.download(ncname);
                  });
         });
     } catch(err) {
-        res.status(500).header('Content-type', 'text/plain').send(err);
-        throw err;
+        send500(res, err);
     }
 }
 
@@ -231,12 +248,13 @@ function buildpreviewcmd(body) {
     return cmd;
 }
 
-function buildpreviewcmd_fullpipe(body, image, ncout, svgout) {
-    return buildcmd(body, image, ncout) + ' | tee ' + ncout + ' | ' + buildpreviewcmd(body) + ' > ' + svgout;
+function buildpreviewcmd_fullpipe(body, image, ncout, svgout, jsonout) {
+    console.log("fullpipe: " + jsonout);
+    return buildcmd(body, image, jsonout) + ' | tee ' + ncout + ' | ' + buildpreviewcmd(body) + ' > ' + svgout;
 }
 
-function buildpreviewcmd_cached(body, ncname, outname) {
-    return buildpreviewcmd(body) + ' < ' + ncname + ' > ' + outname;
+function buildpreviewcmd_cached(body, ncname, svgname) {
+    return buildpreviewcmd(body) + ' < ' + ncname + ' > ' + svgname;
 }
 
 function preview(req, res) {
@@ -253,12 +271,12 @@ function preview(req, res) {
         // first check cache (key uniquely identifies output g-code)
         var file = req.files.image;
         var basename = OUTDIR + hashstring(file.md5 + hashbody(req.body));
-        var outname = basename + '.svg';
+        var svgname = basename + '.svg';
 
-        if(fs.existsSync(outname))
+        if(fs.existsSync(svgname))
         {
             console.log("Cache hit!");
-            return res.sendFile(outname); // hit!
+            return res.sendFile(svgname); // hit!
         }
 
         // see if g-code already exists
@@ -267,30 +285,36 @@ function preview(req, res) {
         var cmd;
         if(fs.existsSync(ncname))
         {
-            cmd = buildpreviewcmd_cached(req.body, ncname, outname);
+            // G-code already exists -- just do preview
+            cmd = buildpreviewcmd_cached(req.body, ncname, svgname);
         }
         else
         {
-            var tmpname = OUTDIR + file.md5;
-            file.mv(tmpname);
-            console.log(tmpname);
+            // G-code doesn't exist -- we need to first toolpath and
+            // then render with the full pipeline
+            var imgname = OUTDIR + file.md5;
+            file.mv(imgname);
+            console.log(imgname);
 
-            cmd = buildpreviewcmd_fullpipe(req.body, tmpname, ncname, outname);
+            var jsonname = basename + '.json';
+
+            console.log("jsonname: " + jsonname);
+
+            cmd = buildpreviewcmd_fullpipe(req.body, imgname, ncname, svgname, jsonname);
             console.log(cmd);
         }
 
         exec(cmd, (err, stdout, stderr) =>
              {
                  if(err) throw err;
-                 res.sendFile(outname);
+                 res.sendFile(svgname);
              });
     } catch(err) {
-        res.status(500).header('Content-type', 'text/plain').send(err);
-        //throw err;
+        send500(res, err);
     }
 }
 
-function preview_precached(req, res) {
+function preview_precache(req, res) {
     console.log("Precache request");
     console.log(req.body);
 
@@ -326,12 +350,12 @@ function preview_precached(req, res) {
 
             // check output cache
             var basename = OUTDIR + hashstring(filehash + hashbody(req.body));
-            var outname = basename + '.svg';
+            var svgname = basename + '.svg';
 
-            if(fs.existsSync(outname))
+            if(fs.existsSync(svgname))
             {
                 console.log("Cache hit!");
-                return res.sendFile(outname); // hit!
+                return res.sendFile(svgname); // hit!
             }
 
             // see if g-code already exists
@@ -340,23 +364,23 @@ function preview_precached(req, res) {
             var cmd;
             if(fs.existsSync(ncname))
             {
-                cmd = buildpreviewcmd_cached(req.body, ncname, outname);
+                cmd = buildpreviewcmd_cached(req.body, ncname, svgname);
             }
             else
             {
-                cmd = buildpreviewcmd_fullpipe(req.body, imgname, ncname, outname);
+                var jsonname = basename + '.json';
+                cmd = buildpreviewcmd_fullpipe(req.body, imgname, ncname, svgname, jsonname);
                 console.log(cmd);
             }
 
             exec(cmd, (err, stdout, stderr) =>
                  {
                      if(err) throw err;
-                     res.sendFile(outname);
+                     res.sendFile(svgname);
                  });
         });
     } catch(err) {
-        res.status(500).header('Content-type', 'text/plain').send(err);
-        throw err;
+        send500(res, err);
     }
 }
 
@@ -366,32 +390,45 @@ function preupload(req, res) {
             return res.status(400).send('no image');
         var file = req.files.file;
 
-        var cachename = OUTDIR + file.md5;
+        var imgname = OUTDIR + file.md5;
 
-        if(!fs.existsSync(cachename))
-            file.mv(cachename);
+        if(!fs.existsSync(imgname))
+            file.mv(imgname);
 
         res.json({success: true});
     } catch(err) {
-        res.status(500).header('Content-type', 'text/plain').send(err);
+        send500(res, err);
     }
 }
 
-function query(req, res) {
+
+function info_precache(req, res) {
+    console.log("Precache request");
+    console.log(req.body);
+
     const errors = validationResult(req);
     if(!errors.isEmpty())
+    {
+        console.log("failed...");
         return res.status(422).json(errors.array());
+    }
 
     try {
-        var hash = req.body.hash;
-        var path = OUTDIR + hash;
-        var ret = { found: false };
-        if(fs.existsSync(path) && hashfile(path) == hash) {
-            ret.found = true;
-        }
-        res.json(ret);
+        var filehash = req.body.hash;
+
+        delete req.body.hash; // normalize req.body so it's the same as the uncached requests
+
+        var basename = OUTDIR + hashstring(filehash + hashbody(req.body));
+        var jsonname = basename + '.json';
+
+        console.log("JSON: " + jsonname);
+
+        if(!fs.existsSync(jsonname))
+            return res.status(404).send("not in cache");
+
+        res.sendFile(jsonname);
     } catch(err) {
-        res.status(500).header('Content-type', 'text/plain').send(err);
+        send500(res, err);
     }
 }
 
@@ -402,14 +439,16 @@ function purge() {
     console.log(removed);
 }
 
-app.post('/api/gcode', checks, gcode)
-app.post('/api/preview', checks, preview);
+app.post(endpoints.gcode, checks, gcode)
+app.post(endpoints.preview, checks, preview);
 
-app.post('/api/gcode/precache', precached_checks, gcode_precached)
-app.post('/api/preview/precache', precached_checks, preview_precached);
+app.post(endpoints.gcode_precache, precached_checks, gcode_precache)
+app.post(endpoints.preview_precache, precached_checks, preview_precache);
+
+// info can only be used with precache
+app.post(endpoints.info, precached_checks, info_precache);
 
 app.post('/api/precache', preupload);
-app.post('/api/query', query_checks, query);
 
 var httpServer = http.createServer(app);
 httpServer.listen(port);

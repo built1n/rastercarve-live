@@ -108,3 +108,23 @@ svg {
 .fullheight {
     height: 100%;
 }
+
+.bottomleft {
+    position: absolute;
+    bottom: 0;
+    float: left;
+}
+
+.translucent {
+    background-color: #fff;
+    background-color: rgba(255,255,255,0.5);
+}
+
+.blue {
+    background-color:
+    #2196f3 !important;
+}
+
+.blue a {
+    color: #fff;
+}

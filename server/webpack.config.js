@@ -30,6 +30,11 @@ module.exports = {
     optimization: {
         minimize: true
     },
+    node: {
+        fs: 'empty',
+        net: 'empty',
+        child_process: 'empty'
+    },
     module: {
         rules: [
             {
