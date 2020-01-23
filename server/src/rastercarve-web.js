@@ -13,6 +13,7 @@ import 'core-js/features/promise';
 import $ from 'jquery';
 import 'jquery-form';
 
+import 'caman';
 import svgPanZoom from 'svg-pan-zoom';
 import 'bootstrap';
 import Split from 'split.js';
@@ -432,6 +433,8 @@ function setSelectedImage(url) {
         };
 
         console.log($("#uploaded-image"));
+
+        $('#image-preview').collapse('show');
 
         displayDims();
     }
