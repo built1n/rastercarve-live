@@ -51,61 +51,63 @@
 
           <form method="POST" class="needs-validation" novalidate id="main" action="javascript:void(0);" enctype="multipart/form-data">
             <fieldset>
-              <legend>Input & Scaling</legend>
-              <div class="form-group">
-                <label for="image">
-                  Image to engrave:
-                </label>
+              <legend>Input & Preprocessing</legend>
+              <div class="form-group mb-0">
                 <div class="custom-file">
-                  <input type="file" class="custom-file-input" id="image" name="image" aria-describedby="fileInput" required>
-                  <label class="custom-file-label" for="image">Choose an image...</label>
-                </div>
-                <small>Or <a href="#sample-container" data-toggle="collapse" id="load-samples">select a sample image</a>.</small>
-                <div class="collapse border rounded container bg-light" id="sample-container">
-                  <div id="sample-gallery">
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;Loading...
-                  </div>
-                  <small class="text-muted">All images are in the public domain.</small>
+                  <input type="file" class="custom-file-input" id="image">
+                  <label class="custom-file-label" for="customFile">Choose image to engrave...</label>
                 </div>
               </div>
+              <small>Or <a href="#sample-container" data-toggle="collapse" id="load-samples">select a sample image</a>.</small>
+              <div class="collapse border rounded container bg-light mb-2 mt-2" id="sample-container">
+                <div id="sample-gallery" class="mb-1">
+                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;Loading...
+                </div>
+                <small class="text-muted">All images are in the public domain.</small>
+              </div>
+              <div class="collapse mb-2" id="image-preview"></div>
+            </fieldset>
 
-              <div class="form-group">
-                <label for="size">Desired dimension:</label>
-                <div class="input-group">
+            <fieldset>
+              <legend>Scaling</legend>
+              <div class="form-group row">
+                  <label for="size" class="col-3 col-form-label align-middle">Desired dimension:</label>
+                <div class="input-group col-9 row">
                   <input type="number" class="form-control" placeholder="Enter value..." min="1" step=".1" max="100" aria-label="Desired dimension" aria-describedby="basic-addon2" name="size" required>
                   <div class="input-group-append">
                     <span class="input-group-text nopad" id="basic-addon2">
                       <select class="btn btn-mini" name="dimension">
                         <option value="width" selected>Width (in)</option>
                         <option value="height">Height (in)</option>
-                    </select></span>
+                      </select>
+                    </span>
                   </div>
                 </div>
               </div>
+
+              <div id="image-info" class="collapse mb-4">
+                <h4>Calculated Dimensions</h4>
+
+                <table class="table mt-3">
+                  <thead>
+                    <tr><td>Width</td><td>Height</td><td>Area</td></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td id="out-width"/><td id="out-height"/><td id="out-area"/></tr>
+                  </tbody>
+                </table>
+              </div>
             </fieldset>
 
-            <div id="image-info" class="collapse mb-4">
-              <h4>Output Summary</h4>
-
-              <p>Selected image:</p>
-              <div id="image-preview"></div>
-              <table class="table mt-3">
-                <thead>
-                  <tr><td>Width</td><td>Height</td><td>Area</td></tr>
-                </thead>
-                <tbody>
-                  <tr><td id="out-width"/><td id="out-height"/><td id="out-area"/></tr>
-                </tbody>
-              </table>
-            </div>
+            <hr class="col-xs-12">
 
             <fieldset>
               <legend>Machine & Tool Options</legend>
 
               <div class="form-row">
-                <div class="form-group col-md-6">
-                  <label for="feed">Feed rate:</label>
-                  <div class="input-group mb-3">
+                <div class="form-group row col-6">
+                  <label for="feed" class="col-6 col-form-label">Feed rate:</label>
+                  <div class="input-group mb-3 col-6">
                     <input type="number" class="form-control" min="1" value="100" aria-label="Feed rate" aria-describedby="basic-addon2" name="feed" required>
                     <div class="input-group-append">
                       <span class="input-group-text">in/min</span>
@@ -113,9 +115,9 @@
                   </div>
                 </div>
 
-                <div class="form-group col-md-6">
-                  <label for="plunge">Plunge rate:</label>
-                  <div class="input-group mb-3">
+                <div class="form-group row col-6">
+                  <label for="plunge" class="col-6 col-form-label">Plunge rate:</label>
+                  <div class="input-group mb-3 col-6">
                     <input type="number" class="form-control" min="1" value="30" aria-label="Plunge rate" aria-describedby="basic-addon2" name="plunge" required>
                     <div class="input-group-append">
                       <span class="input-group-text">in/min</span>
@@ -125,18 +127,18 @@
               </div>
 
               <div class="form-row">
-                <div class="form-group col-md-6">
-                  <label for="safez">Safe Z height:</label>
-                  <div class="input-group mb-3">
+                <div class="form-group row col-6">
+                  <label for="safez" class="col-6 col-form-label">Safe Z height:</label>
+                  <div class="input-group mb-3 col-6">
                     <input type="number" class="form-control" min=".01" step=".01" value=".1" aria-label="Safe Z height" aria-describedby="basic-addon2" name="safez" required>
                     <div class="input-group-append">
                       <span class="input-group-text">in</span>
                     </div>
                   </div>
                 </div>
-                <div class="form-group col-md-6">
-                  <label for="endz">Ending Z height (for final traverse):</label>
-                  <div class="input-group mb-3">
+                <div class="form-group row col-6">
+                  <label for="endz" class="col-6 col-form-label">Ending Z height (for final traverse):</label>
+                  <div class="input-group mb-3 col-6">
                     <input type="number" class="form-control" min=".1" value="2" step=".1" aria-label="Ending Z height" aria-describedby="basic-addon2" name="endz" required>
                     <div class="input-group-append">
                       <span class="input-group-text">in</span>
@@ -146,10 +148,10 @@
               </div>
 
               <div class="form-row">
-                <div class="form-group col-md-6">
-                  <label for="toolangle">V-bit included angle:</label>
+                <div class="form-group row col-6">
+                  <label for="toolangle" class="col-6 col-form-label">V-bit included angle:</label>
 
-                  <div class="input-group mb-3">
+                  <div class="input-group mb-3 col-6">
                     <input type="number" class="form-control" value="30" min="5" max="179" aria-label="Tool angle" aria-describedby="basic-addon2" name="toolangle" required>
                     <div class="input-group-append">
                       <span class="input-group-text">deg</span>
@@ -163,9 +165,9 @@
               <legend>Engraving Options</legend>
 
               <div class="form-row">
-                <div class="form-group col-md-6">
-                  <label for="depth">Maximum engraving depth (in):</label>
-                  <div class="input-group mb-3">
+                <div class="form-group row col-6">
+                  <label for="depth" class="col-6 col-form-label">Maximum engraving depth (in):</label>
+                  <div class="input-group mb-3 col-6">
                     <input type="number" class="form-control" value=".080" step=".001" min=".001" aria-label="Engraving depth" aria-describedby="basic-addon2" name="depth" required>
                     <div class="input-group-append">
                       <span class="input-group-text">in</span>
@@ -173,9 +175,9 @@
                   </div>
                 </div>
 
-                <div class="form-group col-md-6">
-                  <label for="lineangle">Line angle (above horizontal):</label>
-                  <div class="input-group mb-3">
+                <div class="form-group row col-6">
+                  <label for="lineangle" class="col-6 col-form-label">Line angle (above horizontal):</label>
+                  <div class="input-group mb-3 col-6">
                     <input type="number" class="form-control" value="22.5" min="0" max="89.9" step=".1" aria-label="Line angle" aria-describedby="basic-addon2" name="lineangle" required>
                     <div class="input-group-append">
                       <span class="input-group-text">deg</span>
@@ -185,9 +187,9 @@
               </div>
 
               <div class="form-row">
-                <div class="form-group col-md-6">
-                  <label for="stepover">Stepover/line spacing:</label>
-                  <div class="input-group mb-3">
+                <div class="form-group row col-6">
+                  <label for="stepover" class="col-6 col-form-label">Stepover/line spacing:</label>
+                  <div class="input-group mb-3 col-6">
                     <input type="number" class="form-control" min="100" value="120" step="1" aria-label="Stepover" aria-describedby="basic-addon2" name="stepover" required>
                     <div class="input-group-append">
                       <span class="input-group-text">%</span>
@@ -195,9 +197,9 @@
                   </div>
                 </div>
 
-                <div class="form-group col-md-6">
-                  <label for="resolution">Linear resolution:</label>
-                  <div class="input-group mb-3">
+                <div class="form-group col-6 row">
+                  <label for="resolution" class="col-6 col-form-label">Linear resolution:</label>
+                  <div class="input-group mb-3 col-6">
                     <input type="number" class="form-control" value=".05" min="0.001" step=".001" aria-label="Resolution" aria-describedby="basic-addon2" name="resolution" required>
                     <div class="input-group-append">
                       <span class="input-group-text">in</span>
