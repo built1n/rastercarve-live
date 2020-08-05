@@ -32,7 +32,7 @@
         "copy-webpack-plugin": "^5.1.1",
         "core-js": "^3.6.1",
         "express": "^4.17.1",
-        "express-fileupload": "^1.1.5",
+        "express-fileupload": "^1.1.9",
         "express-static-gzip": "^2.0.5",
         "express-validator": "^6.4.0",
         "find-remove": "^2.0.1",
