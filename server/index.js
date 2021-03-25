@@ -46,7 +46,7 @@ const SAMPLEDIR="/app/samples-hashed/";
 
 // try not to take forever
 const limits = {
-    max_size: 100,
+    max_size: 5000,
     min_toolangle: 5,
     min_depth: .01,
     min_res: .001
