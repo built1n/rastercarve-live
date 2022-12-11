@@ -31,7 +31,7 @@
         "compression": "^1.7.4",
         "copy-webpack-plugin": "^5.1.1",
         "core-js": "^3.6.1",
-        "express": "^4.17.1",
+        "express": "^4.17.3",
         "express-fileupload": "^1.1.5",
         "express-static-gzip": "^2.0.5",
         "express-validator": "^6.4.0",
