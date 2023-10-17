@@ -216,6 +216,8 @@ function showPreview(xhr, formData) {
                });
 }
 
+var donate_prompt_shown = false;
+
 function downloadFile(data, filename) {
     var blob = new Blob([data]);
 
@@ -231,6 +233,13 @@ function downloadFile(data, filename) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    //$('.modal').modal({delay: 10000});
+    if(!donate_prompt_shown) {
+	setTimeout(function(){$('.modal').modal('show')}, 500);
+
+	donate_prompt_shown = true;
+    }
 }
 
 function warn(e, msg) {
