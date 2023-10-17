@@ -1,8 +1,9 @@
-FROM node:current-buster
+FROM node:15-buster
 
-RUN apt-get update && apt-get install -y \
+RUN apt update && apt install -y \
     python3.7 \
     python3-pip \
+    python3-opencv \
     git \
     cmake \
     imagemagick
@@ -15,7 +16,8 @@ RUN git clone --recursive https://github.com/built1n/rastercarve-preview && \
     make -j10 && \
     make install
 
-RUN pip3 install rastercarve
+RUN pip3 install setuptools scikit-build numpy tqdm argparse
+RUN git clone https://github.com/built1n/rastercarve && cd rastercarve && SETUP_IGNORE_OPENCV=1 python3 setup.py install
 
 WORKDIR /app
 
